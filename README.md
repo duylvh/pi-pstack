@@ -2,26 +2,26 @@
 
 pstack for Pi: rigorous agent workflows you can parallelize with confidence. Ported from the Cursor pstack plugin.
 
-This is the `duylvh/pi-extensions` fork. It tracks cursor/plugins `pstack` **0.15.36** at commit `ae5650febf4320793844c12c4adaa937f417f8da` and keeps the `@zenspc` package scope so existing settings still resolve. The version `0.8.0-duylvh.1` tells it apart from the npm release. The pin lives in [`scripts/upstream-pin.json`](scripts/upstream-pin.json).
+This is the `duylvh/pi-pstack` fork, split out of `duylvh/pi-extensions` with its history. It tracks cursor/plugins `pstack` **0.15.36** at commit `ae5650febf4320793844c12c4adaa937f417f8da` and keeps the `@zenspc` package scope so existing settings still resolve. The version `0.8.0-duylvh.1` tells it apart from the npm release. The pin lives in [`scripts/upstream-pin.json`](scripts/upstream-pin.json).
 
 If you want to go fast, go deep first. pstack helps you write less, but higher quality code. It gives you fearless parallelism: when an agent goes deep and writes good, verifiable code, you can parallelize with confidence. Start multiple agents with `poteto-mode` and trust they will apply rigorous engineering principles to their work.
 
 ## Install
 
 ```bash
-pi install git:github.com/duylvh/pi-extensions
+pi install git:github.com/duylvh/pi-pstack
 ```
 
-The repository root is a pstack-only Pi package. Its `package.json` manifest points at this directory's extension, skills, and agents, and the other monorepo packages are not loaded through it. Pin a ref with `@<tag-or-commit>`. Restart Pi or `/reload` afterward.
+The repository root is the Pi package. Pin a ref with `@<tag-or-commit>`. Restart Pi or `/reload` afterward.
 
-For development, install this directory from a local clone instead. A path install is not copied, so `git pull` in the clone updates it.
+For development, install a local clone instead. A path install is not copied, so `git pull` in the clone updates it.
 
 ```bash
-git clone https://github.com/duylvh/pi-extensions /path/to/fork
-pi install /path/to/fork/packages/pi-pstack
+git clone https://github.com/duylvh/pi-pstack /path/to/pi-pstack
+pi install /path/to/pi-pstack
 ```
 
-Remove any `npm:@zenspc/pi-pstack` or other pstack entry from your Pi settings first, because two copies of the same skills collide. Run only one of the Git and path installs.
+Remove any `npm:@zenspc/pi-pstack`, `git:github.com/duylvh/pi-extensions`, or other pstack entry from your Pi settings first, because two copies of the same skills collide. Run only one of the Git and path installs.
 
 Requires [`@tintinweb/pi-subagents`](https://www.npmjs.com/package/@tintinweb/pi-subagents) for the `Agent` tool behind `poteto-agent`, `comment-sicko`, and the workflow fan-outs (`how`, `why`, `arena`, `swarm`, `interrogate`, `reflect`). The package declares its agents through `pi.subagents.agents` in `package.json`.
 

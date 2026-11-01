@@ -7,13 +7,12 @@
 	"author": "dhairyaar",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/duylvh/pi-extensions.git",
-		"directory": "packages/pi-pstack"
+		"url": "git+https://github.com/duylvh/pi-pstack.git"
 	},
 	"bugs": {
-		"url": "https://github.com/duylvh/pi-extensions/issues"
+		"url": "https://github.com/duylvh/pi-pstack/issues"
 	},
-	"homepage": "https://github.com/duylvh/pi-extensions/tree/master/packages/pi-pstack#readme",
+	"homepage": "https://github.com/duylvh/pi-pstack#readme",
 	"publishConfig": {
 		"access": "public"
 	},
