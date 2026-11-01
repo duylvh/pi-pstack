@@ -2,7 +2,7 @@
 
 pstack for Pi: rigorous agent workflows you can parallelize with confidence. Ported from the Cursor pstack plugin.
 
-This is the `duylvh/pi-extensions` fork. It tracks cursor/plugins `pstack` **0.15.25** at commit `f713f14203cd6420cec13cd7c55c32d598dbab68` and keeps the `@zenspc` package scope so existing settings still resolve. The version `0.7.0-duylvh.1` tells it apart from the npm release. The pin lives in [`scripts/upstream-pin.json`](scripts/upstream-pin.json).
+This is the `duylvh/pi-extensions` fork. It tracks cursor/plugins `pstack` **0.15.36** at commit `ae5650febf4320793844c12c4adaa937f417f8da` and keeps the `@zenspc` package scope so existing settings still resolve. The version `0.8.0-duylvh.1` tells it apart from the npm release. The pin lives in [`scripts/upstream-pin.json`](scripts/upstream-pin.json).
 
 If you want to go fast, go deep first. pstack helps you write less, but higher quality code. It gives you fearless parallelism: when an agent goes deep and writes good, verifiable code, you can parallelize with confidence. Start multiple agents with `poteto-mode` and trust they will apply rigorous engineering principles to their work.
 
@@ -32,21 +32,21 @@ Requires [`@tintinweb/pi-subagents`](https://www.npmjs.com/package/@tintinweb/pi
 3. Run `/pstack off` to hide even the four Discoverable skills (`how`, `why`, `unslop`, `typescript-best-practices`) from the Skill catalog.
    Off persists in `~/.pi/agent/pstack/models.json`.
    `/skill:<name>` keeps working.
-   `/pstack on` restores those four, not all 54.
+   `/pstack on` restores those four, not all 58.
 
 That is it.
 The other skills are Hidden; the mode skill uses them as needed.
 
 ## What you get
 
-- **54 skills**, including:
+- **58 skills**, including:
   - `poteto-mode`: the main entry point. Reads your request, matches one of 23 playbooks (bug fix, perf, feature, refactoring, investigation, shipping, orchestrate, autopilot, and more), copies its steps in verbatim, and routes to the other skills as steps fire.
-  - Workflow skills: `how`, `why`, `recall`, `blast-radius`, `architect`, `arena`, `swarm`, `interrogate`, `reflect`, `teach`, `tdd`, `no-comments`, `unslop`, `deslop`, `bro`, `figure-it-out`, `show-me-your-work`, `create-verification-skill`, `maintain-verification-skill`, `automate-me`, `technical-writing`, `typescript-best-practices`, `poteto-help`, `ketchup`, `correct`, `sharpen`, `in-your-own-words`, `benchmark-checklist`.
+  - Workflow skills: `how`, `why`, `recall`, `blast-radius`, `architect`, `arena`, `swarm`, `interrogate`, `reflect`, `teach`, `tdd`, `no-comments`, `unslop`, `deslop`, `bro`, `figure-it-out`, `show-me-your-work`, `create-verification-skill`, `maintain-verification-skill`, `create-formal-verification-skill`, `maintain-formal-verification-skill`, `statechart`, `automate-me`, `technical-writing`, `typescript-best-practices`, `poteto-help`, `ketchup`, `ketchup-video`, `correct`, `sharpen`, `in-your-own-words`, `benchmark-checklist`.
   - 24 principle skills (`principle-laziness-protocol`, `principle-model-the-domain`, `principle-prove-it-works`, ...), one rule each, indexed inline by `poteto-mode`.
 - **2 subagents** (loaded by `pi-subagents`):
   - `poteto-agent`: runs poteto's style end to end. Reads `poteto-mode` in full before any work.
   - `comment-sicko`: read-only comment reviewer that savors deletion. Usually invoked through the `no-comments` skill.
-- **Bundled scripts**: `poteto-mode/scripts/` ships the `orch` coordination CLI (orchestrate playbook) and the `watch-pr` watcher (babysit playbook). Both run under [bun](https://bun.sh).
+- **Bundled scripts**: `poteto-mode/scripts/` ships the `watch-pr` watcher (babysit playbook), which runs under [bun](https://bun.sh). `statechart/scripts/` ships the TLA+ statechart compiler, which runs under Node 22.18+, Bun, or Deno and installs TLC and Java with mise on first run.
 
 ## Model roles
 
@@ -74,7 +74,7 @@ Per-role model choices live in `~/.pi/agent/pstack/models.json`. Run `/setup-pst
 
 ```bash
 git clone https://github.com/cursor/plugins /tmp/cursor-plugins
-git -C /tmp/cursor-plugins checkout f713f14203cd6420cec13cd7c55c32d598dbab68
+git -C /tmp/cursor-plugins checkout ae5650febf4320793844c12c4adaa937f417f8da
 node scripts/reground-from-cursor.mjs --from /tmp/cursor-plugins/pstack --to . --dry-run
 node scripts/reground-from-cursor.mjs --from /tmp/cursor-plugins/pstack --to .
 PSTACK_UPSTREAM=/tmp/cursor-plugins/pstack npm test

@@ -139,3 +139,20 @@ test("rejects backtick info strings containing a backtick", () => {
 	assert.equal(result.status, 1);
 	assert.match(result.stderr, /"## Example only" after Close the program is not an appendix/);
 });
+
+test("ignores prose punctuation inside matching multi-backtick code spans", () => {
+	for (const count of [2, 3, 4]) {
+		const delimiter = "`".repeat(count);
+		const result = checkPlan(`${VALID_PLAN}Use ${delimiter}echo \`x\`: “quoted” — example${delimiter}.\n`);
+		assert.equal(result.status, 0, result.stderr);
+	}
+});
+
+test("checks prose following a multi-backtick span and unmatched delimiters", () => {
+	const outside = checkPlan(`${VALID_PLAN}Use \`\`echo \`x\`: y\`\`. Bad: prose.\n`);
+	assert.equal(outside.status, 1);
+	assert.match(outside.stderr, /mid-sentence colon/);
+	const unmatched = checkPlan(`${VALID_PLAN}Use \`\`unclosed: bad\` here.\n`);
+	assert.equal(unmatched.status, 1);
+	assert.match(unmatched.stderr, /mid-sentence colon/);
+});

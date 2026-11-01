@@ -63,7 +63,7 @@ fail(\`lacks "Ten lanes on \\\`<swarm workers model>\\\` at the PR head" with th
 	"skills/poteto-mode/scripts/package.json": `{
   "name": "@cursor-skill/poteto-mode-tools",
   "scripts": {
-    "test": "bun test orch watch-pr check-plan.test.ts"
+    "test": "bun test watch-pr check-plan.test.ts"
   }
 }
 `,
@@ -247,7 +247,7 @@ test("file rules adapt scripts and reject an upstream edit that moves their targ
 
 	const pkg = render("skills/poteto-mode/scripts/package.json");
 	assert.match(pkg, /"name": "@zenspc\/pi-pstack-tools"/);
-	assert.match(pkg, /"test": "bun test orch watch-pr"/);
+	assert.match(pkg, /"test": "bun test watch-pr"/);
 
 	assert.match(
 		render("skills/poteto-mode/scripts/worktree-audit.sh"),

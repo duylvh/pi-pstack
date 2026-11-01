@@ -19,7 +19,7 @@ If the command is unavailable, write that JSON yourself:
 
 Roles: feature, refactoring; bug-fix; perf-issue; hillclimb; judgment and prose; hardest tasks; how explorer; how explainer; why investigators; why synthesizer; reflect tooling; reflect judgment, divergent, synthesizer; arena runners; arena cross-judge pool; swarm workers; architect runners; interrogate reviewers.
 
-Panel roles (`arena runners`, `arena cross-judge pool`, `architect runners`, `interrogate reviewers`) are arrays: one subagent per entry.
+Panel roles (`arena runners`, `arena cross-judge pool`, `architect runners`, `interrogate reviewers`) are arrays: one subagent per entry. `arena cross-judge pool` runs one judge: Arena tries only entries from a model family other than the parent's, in list order, so order it by preference. An `inherit-parent` or `auto` entry never judges.
 
 The file stores no reasoning budget. Each `Agent` spawn sets `thinking` (`off`, `minimal`, `low`, `medium`, `high`, `xhigh`, or `max`) per the Subagents section of `poteto-mode`, and a budget the user states in the task sets the starting level.
 
@@ -29,3 +29,4 @@ If `~/.pi/agent/pstack-models.md` exists and the JSON does not, the extension mi
 
 After writing, tell the user it applies to new turns.
 Offer `/skill:create-verification-skill` once if the project has no verify skill, same as before.
+Then offer `/skill:create-formal-verification-skill` once if the project has no formal verification skill (a project skill that runs a model checker, a proof, or another verifier against the code), so agents can prove a key property holds in every case in scope, not only the cases tests reach. On no, move on without pushing.

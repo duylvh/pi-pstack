@@ -87,6 +87,27 @@ export const SEAMS = [
 		pi: `Always ${WORKTREE_AGENT} unless the task needs this machine or the main checkout's uncommitted state: runtime verification through ${VERIFY_HARNESS}. Reading local session transcripts under \`~/.pi/agent/sessions/\`.`,
 	},
 	{
+		id: "orch-worker-vm",
+		cursor:
+			/Run workers on a new cloud VM \(`environment: "cloud"`\) unless the work needs this machine: a `control-ui` or `control-cli` runtime check \(from `cursor-team-kit`\), local transcripts,/g,
+		pi: `Run each worker as ${WORKTREE_AGENT} unless the work needs this machine or the main checkout's uncommitted state: a runtime check through ${VERIFY_HARNESS}, local session transcripts under \`~/.pi/agent/sessions/\`,`,
+	},
+	{
+		id: "orch-project-state",
+		cursor: /Keep the program's state in the Project tracker \(`notes\.md`\) and the Project store\./g,
+		pi: "Keep the program's state in one tracker file, `orchestrate/<project-slug>/notes.md`, outside the repo checkout so it survives restarts and compaction.",
+	},
+	{
+		id: "orch-fork",
+		cursor: /\*\*Fork when new work needs a worker's built state,\*\* such as its checkout,/g,
+		pi: "**Resume a worker (`Agent` with `resume`) when new work needs its built state,** such as its worktree,",
+	},
+	{
+		id: "adversary-spawn",
+		cursor: /Spawn each adversary as `generalPurpose`\./g,
+		pi: 'Spawn each adversary as an `Agent` call with `subagent_type: "general-purpose"`.',
+	},
+	{
 		id: "control-such-as",
 		cursor: /with the matching control skill \(such as `control-ui` or `control-cli` from `cursor-team-kit`\)/g,
 		pi: `with ${VERIFY_HARNESS}`,
@@ -266,6 +287,11 @@ export const SEAMS = [
 		id: "skills-dir",
 		cursor: /(?:~\/\.cursor\/skills\/|\.cursor\/skills\/)/g,
 		pi: (m) => (m.startsWith("~") ? "~/.pi/agent/skills/" : ".pi/skills/"),
+	},
+	{
+		id: "plugin-cache",
+		cursor: /under `plugins\/cache\/`/g,
+		pi: "inside an installed package (under `~/.pi/agent/git/` or `~/.pi/agent/npm/node_modules/`)",
 	},
 	{
 		id: "plugins-dir",
@@ -473,8 +499,8 @@ export const SEAMS = [
 	{ id: "inherit-parent", cursor: CURSOR_DEFAULT_SLUGS, pi: "`inherit-parent`" },
 	{
 		id: "control-noun",
-		cursor: /\b[Cc]ontrol skill\b/g,
-		pi: (m) => (m[0] === "C" ? "Verification skill" : "verification skill"),
+		cursor: /\b([Cc])ontrol([- ])skill\b/g,
+		pi: (_m, c, sep) => `${c === "C" ? "V" : "v"}erification${sep}skill`,
 	},
 	{
 		id: "slash-skill",
@@ -515,8 +541,14 @@ export const FILE_SEAMS = [
 	{
 		id: "tools-package-test",
 		files: ["skills/poteto-mode/scripts/package.json"],
-		cursor: /bun test orch watch-pr check-plan\.test\.ts/,
-		pi: "bun test orch watch-pr",
+		cursor: /bun test watch-pr check-plan\.test\.ts/,
+		pi: "bun test watch-pr",
+	},
+	{
+		id: "statechart-package-name",
+		files: ["skills/statechart/scripts/package.json"],
+		cursor: /"name": "@cursor-skill\/statechart"/,
+		pi: '"name": "@zenspc/pi-pstack-statechart"',
 	},
 	{
 		id: "audit-transcripts",

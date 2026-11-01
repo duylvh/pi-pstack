@@ -26,6 +26,7 @@ Check the state that changes the answer, and mention it only when it does:
 
 - No `~/.pi/agent/pstack/models.json` means `/setup-pstack` hasn't run for this user, so every role runs on the parent session model.
 - No `verify-*` skill or other app harness in the project means agents have no scripted way to drive the app. Mention `/skill:create-verification-skill` when the question is about proving a change works.
+- No formal verification skill in the project means no property is checked past what tests reach. Mention `/skill:create-formal-verification-skill` when the question is about a race, an invariant, or another case tests rarely hit. When one exists and the code it covers changed after the commit it records as last in sync, mention `/skill:maintain-formal-verification-skill` if the question touches that code.
 - No `Agent` tool in this session means the `pi-subagents` package is not installed, so the fan-out skills (`how`, `why`, `arena`, `swarm`, `interrogate`, `reflect`) and `poteto-agent` cannot spawn anything.
 
 When the models file is missing and it matters, ask whether the user wants to pick a model for each role now. It matters when the user is new, the question is about setup or cost, or the answer depends on which models run. Ask at most once per chat. If the need is also unclear, ask both questions together. Offer two choices:
@@ -36,7 +37,7 @@ When the models file is missing and it matters, ask whether the user wants to pi
 ## Get set up
 
 1. Install the package with `pi install` and the package path from the README, and make sure `pi-subagents` is installed too.
-2. Run `/setup-pstack`. It lists the models this Pi session can use, maps one to each role, and writes `~/.pi/agent/pstack/models.json`. Each value is `inherit-parent`, `auto`, or a `provider/id` slug. Panel roles take several. The file applies from the next turn.
+2. Run `/setup-pstack`. It lists the models this Pi session can use, maps one to each role, and writes `~/.pi/agent/pstack/models.json`. Each value is `inherit-parent`, `auto`, or a `provider/id` slug. Panel roles take several. The file applies from the next turn. Then it offers once each to generate a verification skill and a formal verification skill for the project, unless the project already has one.
 3. Start a real task with `/poteto-mode`, a goal, and a check that can pass or fail.
 
 Reasoning effort has no setting in that file. The agent chooses a `thinking` level per spawn, and the user can steer it in the prompt, as in "max reasoning on the hard parts" or "keep it cheap".
@@ -65,12 +66,13 @@ The default answer is `/poteto-mode`, which runs most of the others when its ste
 |---|---|
 | Do any non-trivial task with rigor | [`/poteto-mode`](../poteto-mode/SKILL.md) |
 | Check that the agent understood their goal and the problem before it starts | [`/skill:in-your-own-words`](../in-your-own-words/SKILL.md) |
-| Aim a task higher before starting: more expert, more outcome-focused, not overspecified | [`/skill:sharpen`](../sharpen/SKILL.md) |
+| Get a prompt rewritten deeper, not bigger, before sending it: what a top professional would add, their raw material and methods, and an outside check. It returns the prompt and doesn't do the task | [`/skill:sharpen`](../sharpen/SKILL.md) |
 | Know how code works now, or where new code should live | [`/skill:how`](../how/SKILL.md) |
 | Know why code is shaped this way, or where a number came from | [`/skill:why`](../why/SKILL.md) |
 | Understand a change or subsystem, explained plainly | [`/skill:teach`](../teach/SKILL.md) |
 | Catch up on their own recent work on a topic | [`/skill:recall`](../recall/SKILL.md) |
-| Catch up on what changed in this chat since their last message, in a few plain sentences and small visuals, with enough context to decide each action item | [`/skill:ketchup`](../ketchup/SKILL.md) |
+| Catch up on what changed in this chat since their last message, in plain words and small visuals, with every item waiting on them listed and decidable from the reply alone | [`/skill:ketchup`](../ketchup/SKILL.md) |
+| Catch up like `/skill:ketchup`, in a short subtitled video of slides, with the waiting calls as text under it | [`/skill:ketchup-video`](../ketchup-video/SKILL.md) |
 | Know what a small diff could break outside itself | [`/skill:blast-radius`](../blast-radius/SKILL.md) |
 | Settle types and module shape before code that crosses a function boundary | [`/skill:architect`](../architect/SKILL.md) |
 | Get several attempts at one brief, merged into the best one | [`/skill:arena`](../arena/SKILL.md) |
@@ -85,6 +87,9 @@ The default answer is `/poteto-mode`, which runs most of the others when its ste
 | Hear the last reply again in plain words | [`/skill:bro`](../bro/SKILL.md) |
 | Give agents a scripted way to drive the app and prove behavior | [`/skill:create-verification-skill`](../create-verification-skill/SKILL.md) |
 | Bring a verification skill and its feature map back in line with the app | [`/skill:maintain-verification-skill`](../maintain-verification-skill/SKILL.md) |
+| Formally verify a race, invariant, or other property that tests rarely reach | [`/skill:create-formal-verification-skill`](../create-formal-verification-skill/SKILL.md) |
+| Bring a formal verification back in line after the code it covers changed, and learn whether a failure is drift or a bug | [`/skill:maintain-formal-verification-skill`](../maintain-formal-verification-skill/SKILL.md) |
+| Show a PM or designer what the user sees as a chart checked by a TLA+ model, with the shortest path to each state that breaks a rule | [`/skill:statechart`](../statechart/SKILL.md) |
 | Vet a performance number before reporting or acting on it | [`/skill:benchmark-checklist`](../benchmark-checklist/SKILL.md) |
 | Run a large or cross-cutting change, or one to review after stepping away | [`/skill:figure-it-out`](../figure-it-out/SKILL.md) |
 | Keep a decision log during a run, and review it afterward | [`/skill:show-me-your-work`](../show-me-your-work/SKILL.md) |
@@ -120,7 +125,7 @@ Playbooks are step lists inside `/poteto-mode`, not skills, so they have no comm
 - "land the stack" runs Shipping.
 - "take over this branch" runs Session pickup.
 - "pause safely" runs Pause safely.
-- "full autopilot on this queue" runs Autopilot-full. "stack them, don't ship" runs Autopilot-stack.
+- "full autopilot on this queue" runs Autopilot-full. "autopilot, don't merge" runs Autopilot-stack.
 - "run the eval playbook" runs Eval.
 
 Without `/poteto-mode`, a phrase such as "babysit this pr" gets whatever generic handling the session has instead of the playbook. The Playbooks section of [`poteto-mode`](../poteto-mode/SKILL.md) lists every playbook and when it applies.
