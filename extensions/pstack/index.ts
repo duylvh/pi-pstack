@@ -1,5 +1,4 @@
-import { existsSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname, join, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { ExtensionAPI, ExtensionCommandContext, ExtensionContext } from "@earendil-works/pi-coding-agent";
 import {
@@ -11,24 +10,33 @@ import {
 	configPath,
 	defaultConfig,
 	formatRoleTable,
+	formatPanelStatus,
+	modelsForRole,
 	isSafeModelSelector,
 	loadConfig,
 	migrateLegacyMarkdownIfNeeded,
 	saveConfig,
 } from "./config.ts";
-import { stripSkillsByLocationPrefix } from "./skill-strip.ts";
 
 const SKILLS_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "skills");
 
 const POTETO_SKILL = "/skill:poteto-mode";
-const POTETO_PROMPT =
-	"New task? Playbook match or rigor needed -> apply /poteto-mode. Casual turn or user opts out -> don't.";
+const POTETO_SKILL_PATH = join(SKILLS_DIR, "poteto-mode", "SKILL.md");
+const POTETO_PROMPT = [
+	"Poteto Mode is ON.",
+	"New task? Playbook match or rigor needed -> apply /poteto-mode. Casual turn or user opts out -> don't.",
+	`Before work needing rigor, read the full skill at ${JSON.stringify(POTETO_SKILL_PATH)} if it is missing from the current context, including after compaction.`,
+].join("\n");
+const POTETO_OFF = "Poteto Mode is OFF. Ignore earlier Poteto Mode activation and mode-specific instructions unless the user enables it again.";
 
-export function systemPromptInjection(config: PstackConfig, potetoMode: boolean): string {
+type PotetoMode = boolean | undefined;
+
+export function systemPromptInjection(config: PstackConfig, potetoMode: PotetoMode): string {
 	const parts: string[] = [];
 	const table = formatRoleTable(config);
 	if (table) parts.push(table);
-	if (potetoMode) parts.push(POTETO_PROMPT);
+	if (potetoMode === true) parts.push(POTETO_PROMPT);
+	else if (potetoMode === false) parts.push(POTETO_OFF);
 	return parts.join("\n\n");
 }
 
@@ -46,11 +54,11 @@ function sessionEntries(ctx: ExtensionContext): ModeEntry[] {
 	return typeof sm.getBranch === "function" ? sm.getBranch() : sm.getEntries();
 }
 
-function lastPotetoEnabled(entries: ModeEntry[]): boolean {
-	let enabled = false;
+function lastPotetoEnabled(entries: ModeEntry[]): PotetoMode {
+	let enabled: PotetoMode;
 	for (const entry of entries) {
-		if (entry.type === "custom" && entry.customType === "pstack-mode") {
-			enabled = Boolean(entry.data?.enabled);
+		if (entry.type === "custom" && entry.customType === "pstack-mode" && typeof entry.data?.enabled === "boolean") {
+			enabled = entry.data.enabled;
 		}
 	}
 	return enabled;
@@ -81,12 +89,30 @@ function modelChoices(ctx: ExtensionCommandContext): string[] {
 	return ["inherit-parent", "auto", ...ids];
 }
 
-function isInheritSelector(value: string): boolean {
-	return value === "inherit-parent" || value === "auto";
-}
-
 export default function pstackExtension(pi: ExtensionAPI): void {
-	let potetoMode = false;
+	let potetoMode: PotetoMode;
+	const configWarnings = new Set<string>();
+
+	function report(ctx: ExtensionContext, message: string, type: "info" | "warning" | "error" = "info"): void {
+		if (ctx.hasUI) ctx.ui.notify(message, type);
+		else pi.sendMessage({ customType: "pstack-status", content: message, display: true });
+	}
+
+	function readConfig(ctx: ExtensionContext) {
+		const result = loadConfig();
+		const warning = `${result.path}\n${result.diagnostics.join("\n")}`;
+		if (result.diagnostics.length && !configWarnings.has(warning)) {
+			configWarnings.add(warning);
+			report(ctx, `Pstack config ${result.status}: ${warning}\nUsing defaults for rejected settings; the file was not changed. Run /pstack status for details.`, "warning");
+		}
+		return result;
+	}
+
+	function canWriteConfig(ctx: ExtensionContext, result: ReturnType<typeof loadConfig>): boolean {
+		if (result.status === "loaded" || result.status === "missing") return true;
+		report(ctx, `Refusing to overwrite ${result.path}. Repair or move the existing configuration, then retry.`, "error");
+		return false;
+	}
 
 	function setStatus(ctx: ExtensionContext): void {
 		if (ctx.mode !== "tui") return;
@@ -99,33 +125,49 @@ export default function pstackExtension(pi: ExtensionAPI): void {
 		if (ctx) setStatus(ctx);
 	}
 
-	pi.on("session_start", async (_event, ctx) => {
-		potetoMode = false;
+	function restoreMode(ctx: ExtensionContext): void {
 		potetoMode = lastPotetoEnabled(sessionEntries(ctx));
 		setStatus(ctx);
+	}
+
+	function requireSkill(ctx: ExtensionContext): boolean {
+		if (pi.getCommands().some((command) => command.source === "skill" && command.name === "skill:poteto-mode")) return true;
+		const message = "Poteto Mode requires its skill. Load the full pi-pstack package, not just its extension, and enable the poteto-mode skill.";
+		if (ctx.hasUI) ctx.ui.notify(message, "error");
+		else pi.sendMessage({ customType: "pstack-error", content: message, display: true });
+		return false;
+	}
+
+	pi.on("session_start", async (_event, ctx) => {
+		restoreMode(ctx);
 		try {
 			migrateLegacyMarkdownIfNeeded();
 		} catch {
 			// ignore migration errors
 		}
+		readConfig(ctx);
 	});
+
+	pi.on("session_tree", async (_event, ctx) => restoreMode(ctx));
 
 	pi.on("input", async (event, ctx) => {
 		if (/^\/skill:poteto-mode(?:\s|$)/.test(event.text)) {
+			if (!requireSkill(ctx)) return { action: "handled" as const };
 			persistMode(true, ctx);
 		}
 		return { action: "continue" as const };
 	});
 
-	pi.on("before_agent_start", async (event) => {
-		const config = loadConfig();
-		const base = config.skillsEnabled
-			? event.systemPrompt
-			: stripSkillsByLocationPrefix(event.systemPrompt, SKILLS_DIR).prompt;
+	pi.on("before_agent_start", async (event, ctx) => {
+		restoreMode(ctx);
+		const { config } = readConfig(ctx);
+		const options = event.systemPromptOptions;
+		if (!config.skillsEnabled) {
+			options.skills = options.skills.filter((skill) => !skill.filePath.startsWith(`${SKILLS_DIR}${sep}`));
+		}
 		const extra = systemPromptInjection(config, potetoMode);
-		return {
-			systemPrompt: extra ? `${base}\n\n${extra}` : base,
-		};
+		if (extra) options.sections.pstack = extra;
+		else delete options.sections.pstack;
 	});
 
 	pi.registerCommand("poteto-mode", {
@@ -139,12 +181,13 @@ export default function pstackExtension(pi: ExtensionAPI): void {
 		},
 		handler: async (args, ctx) => {
 			const raw = args.trim();
-			const token = raw.split(/\s+/)[0]?.toLowerCase() ?? "";
+			const token = raw.toLowerCase();
 			if (token === "off" || token === "disable" || token === "stop") {
 				persistMode(false, ctx);
 				ctx.ui.notify("Poteto Mode off.", "info");
 				return;
 			}
+			if (!requireSkill(ctx)) return;
 			persistMode(true, ctx);
 			ctx.ui.notify("Poteto Mode on. Stays on until /poteto-mode off.", "info");
 			const payload = `${POTETO_SKILL}${raw ? ` ${raw}` : ""}`;
@@ -165,14 +208,15 @@ export default function pstackExtension(pi: ExtensionAPI): void {
 			} catch {
 				// ignore
 			}
-			const path = configPath();
-			const config = loadConfig();
+			const loaded = readConfig(ctx);
+			if (!canWriteConfig(ctx, loaded)) return;
+			const { path, config } = loaded;
 			if (!ctx.hasUI) {
-				if (!existsSync(path) && !saveConfig(defaultConfig(), path)) {
-					ctx.ui.notify(`Failed to write ${path}`, "error");
+				if (loaded.status === "missing" && !saveConfig(defaultConfig(), path)) {
+					report(ctx, `Failed to write ${path}`, "error");
 					return;
 				}
-				ctx.ui.notify(`Wrote ${path}`, "info");
+				report(ctx, `${loaded.status === "missing" ? "Wrote" : "Using"} ${path}`);
 				return;
 			}
 
@@ -203,11 +247,24 @@ export default function pstackExtension(pi: ExtensionAPI): void {
 		},
 		handler: async (args, ctx) => {
 			const token = args.trim().toLowerCase();
-			const config = loadConfig();
+			const loaded = readConfig(ctx);
+			const { config } = loaded;
 			if (token === "" || token === "status") {
 				const state = config.skillsEnabled ? "on" : "off";
 				const hint = config.skillsEnabled ? "" : " Skills are hidden from the model; /skill:<name> still works.";
-				ctx.ui.notify(`pstack is ${state}.${hint}`, "info");
+				const parent = ctx.model ? `${ctx.model.provider}/${ctx.model.id}` : undefined;
+				const available = new Set(ctx.modelRegistry.getAvailable().map((model) => `${model.provider}/${model.id}`));
+				const unavailable = [...new Set(ROLE_NAMES.flatMap((role) => modelsForRole(config, role)))].filter(
+					(selector) => selector !== "inherit-parent" && selector !== "auto" && !available.has(selector),
+				);
+				report(ctx, [
+					`pstack is ${state}.${hint}`, `Config: ${loaded.path}`, `Load status: ${loaded.status}`,
+					...loaded.diagnostics,
+					`Parent session model: ${parent ?? "unresolved"}`,
+					"Effective panel selectors (not a dispatch guarantee):", formatPanelStatus(config, parent),
+					unavailable.length ? `Unavailable in this session: ${unavailable.join(", ")}` : "Configured model selectors are available in this session.",
+					"Same-model panels are repeated samples, not cross-model review. For opt-in diversity, choose confirmed available models with /setup-pstack; no extra provider is selected automatically.",
+				].join("\n"));
 				return;
 			}
 			const enabled = token === "on" || token === "enable";
@@ -215,14 +272,15 @@ export default function pstackExtension(pi: ExtensionAPI): void {
 				ctx.ui.notify("Usage: /pstack [on|off|status]", "error");
 				return;
 			}
+			if (!canWriteConfig(ctx, loaded)) return;
 			if (enabled !== config.skillsEnabled) {
 				config.skillsEnabled = enabled;
 				if (!saveConfig(config)) {
-					ctx.ui.notify(`Failed to write ${configPath()}`, "error");
+					report(ctx, `Failed to write ${configPath()}`, "error");
 					return;
 				}
 			}
-			ctx.ui.notify(
+			report(ctx,
 				enabled ? "pstack skills on." : "pstack skills off. Hidden from the model; /skill:<name> still works.",
 				"info",
 			);
@@ -249,16 +307,11 @@ async function pickListRole(
 ): Promise<RoleValue | undefined> {
 	const first = await ctx.ui.select(`Model for ${role}`, labeledChoices(choices, current));
 	if (!first) return undefined;
-	const selected = stripCurrentMark(first);
-	if (isInheritSelector(selected)) return selected;
-
-	const picked = [selected];
+	const picked = [stripCurrentMark(first)];
 	while (true) {
 		const next = await ctx.ui.select("Add another model for this role?", ["done", ...choices]);
 		if (!next) return undefined;
 		if (next === "done") return picked;
-		const value = stripCurrentMark(next);
-		if (isInheritSelector(value)) return value;
-		picked.push(value);
+		picked.push(stripCurrentMark(next));
 	}
 }

@@ -9,7 +9,7 @@ import {
 	unlinkSync,
 	writeFileSync,
 } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { dirname, join, posix, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 export const DISCOVERABLE = ["how", "typescript-best-practices", "unslop", "why"];
@@ -44,6 +44,8 @@ export const CLASS_RULES = [
 	{ pattern: "skills/poteto-help/SKILL.md", class: "pi-only" },
 	{ pattern: "skills/poteto-mode/scripts/check-plan.test.mjs", class: "pi-only" },
 	{ pattern: "skills/poteto-mode/scripts/bun.lock", class: "pi-only" },
+	{ pattern: "skills/poteto-mode/references/pi-models.md", class: "pi-only" },
+	{ pattern: "skills/poteto-mode/references/pi-runtime.md", class: "pi-only" },
 
 	{ pattern: "skills/principle-*/**", class: "copy" },
 	{ pattern: "skills/typescript-best-practices/references/patterns.md", class: "copy" },
@@ -95,7 +97,7 @@ export const SEAMS = [
 	{
 		id: "orch-project-state",
 		cursor: /Keep the program's state in the Project tracker \(`notes\.md`\) and the Project store\./g,
-		pi: "Keep the program's state in one tracker file, `orchestrate/<project-slug>/notes.md`, outside the repo checkout so it survives restarts and compaction.",
+		pi: "Keep the program's state in one tracker file, `notes.md`, in the task-scoped artifact directory the Pi runtime prerequisites describe, outside the repo checkout so it survives restarts and compaction.",
 	},
 	{
 		id: "orch-fork",
@@ -729,7 +731,7 @@ const SUBAGENT_DEFAULTS =
 	"**Defaults for every `Agent` call.** `run_in_background: true`, file pointers not inlined context, explicit `model` per role. Every role defaults to the parent session model (`inherit-parent`; omit `model`). `/setup-pstack` writes `~/.pi/agent/pstack/models.json`, and the injected pstack role table lists only roles with a real provider-qualified slug. Pass that slug as `model`. `inherit-parent` and `auto` mean omit `model`. Never pass `isolated: true`, because it strips MCP tools. Code delegates tier by difficulty. The hardest changes (cross-cutting design, gnarly concurrency, subtle algorithms) go to the model configured for `hardest tasks`, else the parent model, when the task needs judgment or the intent is vague, and to your strongest instruction-following model when the work is a precisely specified sequence of steps to execute to the letter. Trivial mechanical edits go to your fast code model. Per-role lines in the injected pstack role table override these defaults and the model choices in the routed skills (`how`, `why`, `arena`, `swarm`, `architect`, `interrogate`, `reflect`). A role with no line keeps its default, and a role line of `inherit-parent` or `auto` runs that role on the parent chat model (omit `model`). Each code playbook's configured model comes from its line (`feature, refactoring`, `bug-fix`, `perf-issue`, or `hillclimb`), and the hardest changes read `hardest tasks`. Prose and judgment read `judgment and prose`.";
 
 const MATCH_MODEL =
-	"**Match the model to the job.** Before each spawn, start from the role's line or default and pick the `thinking` level the job needs (`off`, `minimal`, `low`, `medium`, `high`, `xhigh`, or `max`). Omit `thinking` to run at the agent's own default level. If the user states a reasoning budget, such as \"max reasoning\" or \"keep it cheap\", that sets the starting level for every spawn. Raise it one step, up to `max`, for the hardest or subtlest work. Lower it one step for judgment and two or more steps for routine work. The `Agent` tool has no fast-mode variant, so choose speed through the model alone. Verification is the exception and stays on the `swarm workers` model. Change only `thinking` and keep the model the role names, so a diverse panel stays diverse. A role on `auto` or `inherit-parent` stays on the parent model. Pi clamps a level the model does not support, so do not retry with another level.";
+	"**Match the model to the job.** Before each spawn, start from the role's line or default and pick the `thinking` level the job needs (`off`, `minimal`, `low`, `medium`, `high`, `xhigh`, or `max`). Omit `thinking` to run at the agent's own default level. If the user states a reasoning budget, such as \"max reasoning\" or \"keep it cheap\", that sets the starting level for every spawn. Raise it one step, up to `max`, for the hardest or subtlest work. Lower it one step for judgment and two or more steps for routine work. The `Agent` tool has no fast-mode variant, so choose speed through the model alone. Verification is the exception and stays on the `swarm workers` model. Change only `thinking` and keep the model the role names, so a diverse panel stays diverse. A role on `auto` or `inherit-parent` stays on the parent model. Pi clamps a level the model does not support, so do not retry with another level. Never append a level to `model` (`provider/id:high`); see [Pi review models](references/pi-models.md).";
 
 function replaceRequired(text, pattern, replacement, label) {
 	if (!pattern.test(text)) throw new Error(`poteto-mode patch target missing: ${label}`);
@@ -878,6 +880,52 @@ export function applyFileTransforms(text, rel) {
 	return text;
 }
 
+const PI_MODELS = "skills/poteto-mode/references/pi-models.md";
+const PI_RUNTIME = "skills/poteto-mode/references/pi-runtime.md";
+
+export const PI_REFERENCE_LINKS = [
+	{
+		target: PI_MODELS,
+		label: "Pi review models",
+		reason: "before spawning a panel. It covers how `Agent` resolves `model`, and how to report the models that ran",
+		files: ["skills/arena/SKILL.md", "skills/interrogate/SKILL.md", "skills/architect/SKILL.md"],
+	},
+	{
+		target: PI_RUNTIME,
+		label: "Pi runtime prerequisites",
+		reason: "before scheduling a wake, reading a transcript, or choosing where durable artifacts go",
+		files: [
+			"skills/automate-me/SKILL.md",
+			"skills/recall/SKILL.md",
+			"skills/reflect/SKILL.md",
+			"skills/show-me-your-work/SKILL.md",
+			"skills/poteto-mode/playbooks/autonomous-run.md",
+			"skills/poteto-mode/playbooks/autopilot-full.md",
+			"skills/poteto-mode/playbooks/babysit.md",
+			"skills/poteto-mode/playbooks/bug-fix.md",
+			"skills/poteto-mode/playbooks/eval.md",
+			"skills/poteto-mode/playbooks/hillclimb.md",
+			"skills/poteto-mode/playbooks/multi-phase-plan.md",
+			"skills/poteto-mode/playbooks/orchestrate.md",
+			"skills/poteto-mode/playbooks/session-pickup.md",
+			"skills/poteto-mode/playbooks/shipping.md",
+		],
+	},
+];
+
+export function addPiReferenceLinks(text, rel) {
+	for (const ref of PI_REFERENCE_LINKS) {
+		if (!ref.files.includes(rel)) continue;
+		const href = posix.relative(posix.dirname(rel), ref.target);
+		const line = `Read [${ref.label}](${href}) ${ref.reason}.`;
+		if (text.includes(line)) continue;
+		const heading = /^(#{1,3} [^\n]+\n)/m;
+		if (!heading.test(text)) throw new Error(`pi reference link found no heading in ${rel}`);
+		text = text.replace(heading, (m) => `${m}\n${line}\n`);
+	}
+	return text;
+}
+
 export function renderWrite(action, paths) {
 	refreshSkillNames(paths.from, paths.to);
 	const src = join(paths.from, action.rel);
@@ -894,7 +942,7 @@ export function renderWrite(action, paths) {
 	if (action.class === "adapt") {
 		text = base.endsWith(".md") ? applyBodyTransforms(text) : applyFileTransforms(text, action.rel);
 	}
-	return text;
+	return addPiReferenceLinks(text, action.rel);
 }
 
 function writeIfChanged(dest, text, modeSrc) {

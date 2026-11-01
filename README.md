@@ -2,7 +2,7 @@
 
 pstack for Pi: rigorous agent workflows you can parallelize with confidence. Ported from the Cursor pstack plugin.
 
-This is the `duylvh/pi-pstack` fork, split out of `duylvh/pi-extensions` with its history. It tracks cursor/plugins `pstack` **0.15.36** at commit `ae5650febf4320793844c12c4adaa937f417f8da` and keeps the `@zenspc` package scope so existing settings still resolve. The version `0.8.0-duylvh.1` tells it apart from the npm release. The pin lives in [`scripts/upstream-pin.json`](scripts/upstream-pin.json).
+This is the `duylvh/pi-pstack` fork, split out of `duylvh/pi-extensions` with its history. It tracks cursor/plugins `pstack` **0.15.36** at commit `ae5650febf4320793844c12c4adaa937f417f8da` and keeps the `@zenspc` package scope so existing settings still resolve. The version `0.9.0-duylvh.1` tells it apart from the npm release. The pin lives in [`scripts/upstream-pin.json`](scripts/upstream-pin.json).
 
 If you want to go fast, go deep first. pstack helps you write less, but higher quality code. It gives you fearless parallelism: when an agent goes deep and writes good, verifiable code, you can parallelize with confidence. Start multiple agents with `poteto-mode` and trust they will apply rigorous engineering principles to their work.
 
@@ -23,7 +23,9 @@ pi install /path/to/pi-pstack
 
 Remove any `npm:@zenspc/pi-pstack`, `git:github.com/duylvh/pi-extensions`, or other pstack entry from your Pi settings first, because two copies of the same skills collide. Run only one of the Git and path installs.
 
-Requires [`@tintinweb/pi-subagents`](https://www.npmjs.com/package/@tintinweb/pi-subagents) for the `Agent` tool behind `poteto-agent`, `comment-sicko`, and the workflow fan-outs (`how`, `why`, `arena`, `swarm`, `interrogate`, `reflect`). The package declares its agents through `pi.subagents.agents` in `package.json`.
+Requires Pi 1.4 or later, which provides the structured system prompt the extension edits.
+
+Requires [`@tintinweb/pi-subagents`](https://www.npmjs.com/package/@tintinweb/pi-subagents) for the `Agent` tool behind `poteto-agent`, `comment-sicko`, and the workflow fan-outs (`how`, `why`, `arena`, `swarm`, `interrogate`, `reflect`). The package declares its agents through `pi.subagents.agents` in `package.json`. The skills use that package's `Agent` inputs (`subagent_type`, `model`, `thinking`, `run_in_background`, `isolation`, `resume`). They do not work with the unrelated npm `pi-subagents` package, whose `subagent()` tool takes different inputs.
 
 ## Get started
 
@@ -46,11 +48,20 @@ The other skills are Hidden; the mode skill uses them as needed.
 - **2 subagents** (loaded by `pi-subagents`):
   - `poteto-agent`: runs poteto's style end to end. Reads `poteto-mode` in full before any work.
   - `comment-sicko`: read-only comment reviewer that savors deletion. Usually invoked through the `no-comments` skill.
+- **Pi guides** under `poteto-mode/references/`: `pi-models.md` (how `Agent` resolves `model`, panel reporting, fallbacks, the Arena cross-judge) and `pi-runtime.md` (wakes, transcripts, delegated runs, artifact directories). The skills that need them link to them.
 - **Bundled scripts**: `poteto-mode/scripts/` ships the `watch-pr` watcher (babysit playbook), which runs under [bun](https://bun.sh). `statechart/scripts/` ships the TLA+ statechart compiler, which runs under Node 22.18+, Bun, or Deno and installs TLC and Java with mise on first run.
 
 ## Model roles
 
-Per-role model choices live in `~/.pi/agent/pstack/models.json`. Run `/setup-pstack` to write it. The extension injects the role table only when a role has a real model slug. Default inherit-all injects nothing. `inherit-parent` or `auto` runs on the parent session model.
+Per-role model choices live in `~/.pi/agent/pstack/models.json`. Run `/setup-pstack` to write it. The extension injects the role table only when a role has a real model slug. Default inherit-all injects nothing. `inherit-parent` or `auto` runs on the parent session model, and a panel keeps one seat per entry, inherited seats included.
+
+Each value is a plain `provider/id`. Reasoning effort is not stored: each `Agent` spawn sets `thinking`, per the Subagents section of `poteto-mode`. Do not append a level such as `:high` to a model, because `Agent` would fuzzy-match the whole string to some model.
+
+`/pstack status` shows the config path and load status, the parent model, each panel seat's effective model, any configured model this session cannot reach, and a warning when a panel repeats one model. If `models.json` is broken, pstack warns once per session, uses defaults for the rejected settings, and refuses to overwrite the file until you fix or move it.
+
+## Poteto Mode state
+
+The mode is stored in the session, so it follows `/resume`, `/tree` navigation, and forks. When it is on, the extension adds a short prompt section with the absolute path to `poteto-mode/SKILL.md`, so the model can reload the skill after compaction. When it is off after being on, the section says so explicitly. `/poteto-mode off`, `disable`, or `stop` alone turns it off; `/poteto-mode stop the parser crash` starts that task. Activation fails with an error if the pstack skills are not loaded.
 
 ## Differences from the Cursor plugin
 

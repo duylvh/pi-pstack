@@ -1,8 +1,10 @@
 ### Orchestrate
 
+Read [Pi runtime prerequisites](../references/pi-runtime.md) before scheduling a wake, reading a transcript, or choosing where durable artifacts go.
+
 **You run the program, never the code. Decide which agent does each piece of work, then check what each one produces.** For a standing project handed to one coordinator chat: multi-day, many stacked PRs, dozens to hundreds of subagents, few human turns. One task driven to a predicate is Autonomous run. One ambitious run that needs a bespoke workflow is figure-it-out. Work that one agent could finish inside the session's budget is not a program.
 
-Run it with your own tools. Spawn workers with `Agent`. Keep the program's state in one tracker file, `orchestrate/<project-slug>/notes.md`, outside the repo checkout so it survives restarts and compaction. Watch each PR with PR and CI event subscriptions when your harness has them. Call no scripts, run no polling loops, and never relay messages or status between agents.
+Run it with your own tools. Spawn workers with `Agent`. Keep the program's state in one tracker file, `notes.md`, in the task-scoped artifact directory the Pi runtime prerequisites describe, outside the repo checkout so it survives restarts and compaction. Watch each PR with PR and CI event subscriptions when your harness has them. Call no scripts, run no polling loops, and never relay messages or status between agents.
 
 #### Topology
 

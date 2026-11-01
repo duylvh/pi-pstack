@@ -6,6 +6,8 @@ disable-model-invocation: true
 
 # Architect
 
+Read [Pi review models](../poteto-mode/references/pi-models.md) before spawning a panel. It covers how `Agent` resolves `model`, and how to report the models that ran.
+
 Sketch types, function signatures, class shapes, and module boundaries with `not implemented` bodies and pseudocode. Synthesize across multiple model perspectives, then fill in code against the chosen sketch.
 
 ## Start

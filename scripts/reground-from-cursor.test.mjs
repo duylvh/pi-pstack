@@ -7,6 +7,7 @@ import { dirname, join, relative } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import {
+	addPiReferenceLinks,
 	applyBodyTransforms,
 	asRelPath,
 	assertNoCursorSeams,
@@ -144,6 +145,8 @@ test("classify assigns each path its owner", () => {
 		"skills/poteto-mode/scripts/check-plan.test.mjs": "pi-only",
 		"skills/poteto-mode/scripts/check-plan.test.ts": "never-copy",
 		"skills/poteto-mode/scripts/bun.lock": "pi-only",
+		"skills/poteto-mode/references/pi-models.md": "pi-only",
+		"skills/poteto-mode/references/pi-runtime.md": "pi-only",
 	};
 	for (const [rel, owner] of Object.entries(expected)) assert.equal(classify(asRelPath(rel)), owner, rel);
 });
@@ -274,6 +277,16 @@ test("sync converges: the second run changes no byte and Pi-owned files survive"
 
 	main(["--from", from, "--to", to]);
 	assert.deepEqual(hashTree(to), first);
+});
+
+test("Pi reference links land once under the heading and fail loudly without one", () => {
+	const arena = addPiReferenceLinks("---\nname: arena\n---\n\n# Arena\n\nBody.\n", "skills/arena/SKILL.md");
+	assert.match(arena, /# Arena\n\nRead \[Pi review models\]\(\.\.\/poteto-mode\/references\/pi-models\.md\)/);
+	assert.equal(addPiReferenceLinks(arena, "skills/arena/SKILL.md"), arena);
+	const playbook = addPiReferenceLinks("### Orchestrate\n\nBody.\n", "skills/poteto-mode/playbooks/orchestrate.md");
+	assert.match(playbook, /\[Pi runtime prerequisites\]\(\.\.\/references\/pi-runtime\.md\)/);
+	assert.equal(addPiReferenceLinks("Body.\n", "skills/how/SKILL.md"), "Body.\n");
+	assert.throws(() => addPiReferenceLinks("No heading.\n", "skills/arena/SKILL.md"), /no heading/);
 });
 
 test("leftover Cursor constructs fail the sync", () => {

@@ -6,6 +6,8 @@ disable-model-invocation: true
 
 # Arena
 
+Read [Pi review models](../poteto-mode/references/pi-models.md) before spawning a panel. It covers how `Agent` resolves `model`, and how to report the models that ran.
+
 Open a todolist with one entry per phase (Frame, Fan out, Cross-judge, Pick, Graft, Verify) before launching anything.
 
 ## Phase A: Frame

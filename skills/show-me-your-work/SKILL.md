@@ -6,6 +6,8 @@ disable-model-invocation: true
 
 # Show me your work
 
+Read [Pi runtime prerequisites](../poteto-mode/references/pi-runtime.md) before scheduling a wake, reading a transcript, or choosing where durable artifacts go.
+
 Keep one canonical log.
 
 ## The format

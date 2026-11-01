@@ -1,5 +1,7 @@
 ### Multi-phase or multi-PR plan
 
+Read [Pi runtime prerequisites](../references/pi-runtime.md) before scheduling a wake, reading a transcript, or choosing where durable artifacts go.
+
 **You own the plan, not the code. The plan is a checklist an owner runs box by box and the operator audits from the evidence.** The plan is the deliverable. Do not implement.
 
 1. When the change is one or two files with an obvious approach, skip the plan. Say so and stop.

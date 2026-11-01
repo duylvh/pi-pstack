@@ -6,6 +6,8 @@ disable-model-invocation: true
 
 # Automate me
 
+Read [Pi runtime prerequisites](../poteto-mode/references/pi-runtime.md) before scheduling a wake, reading a transcript, or choosing where durable artifacts go.
+
 A guided flow for turning the user's working conventions into a skill agents will follow. The output is one `-mode` skill tailored to them (e.g. `jay-mode`, `priya-mode`).
 
 This skill orchestrates three others: an inline mining pass (see step 1), `playbooks/authoring-a-skill.md` (authoring), and the **unslop** skill (prose discipline). It sequences them. It doesn't replace them.

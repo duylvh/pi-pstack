@@ -6,6 +6,8 @@ disable-model-invocation: true
 
 # Interrogate
 
+Read [Pi review models](../poteto-mode/references/pi-models.md) before spawning a panel. It covers how `Agent` resolves `model`, and how to report the models that ran.
+
 Adversaries try to break a change or a design. A finding survives only when a run proves it. Report the findings. Do not apply fixes.
 
 ## Frame

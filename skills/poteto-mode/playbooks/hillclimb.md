@@ -1,5 +1,7 @@
 ### Hillclimb
 
+Read [Pi runtime prerequisites](../references/pi-runtime.md) before scheduling a wake, reading a transcript, or choosing where durable artifacts go.
+
 **You own the metric and the experiment's integrity. Supervise and review. Delegate the attempts.** For sustained, iterative improvement of one measurable thing against a target. A one-off fix is Bug fix or Perf issue. This is the loop.
 
 Core discipline: one change, one measurement, keep or revert. Never stack untested changes, and never claim a win from code inspection (the **prove-it-works** principle skill).

@@ -1,5 +1,7 @@
 ### Autonomous run
 
+Read [Pi runtime prerequisites](../references/pi-runtime.md) before scheduling a wake, reading a transcript, or choosing where durable artifacts go.
+
 **You own the exit condition. Define done, then drive to it without stopping.**
 
 1. State the exit condition as a checkable predicate before the first iteration (tests green, repro fixed, all N PRs merged, pixel-diff zero).

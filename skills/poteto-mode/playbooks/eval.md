@@ -1,5 +1,7 @@
 ### Eval
 
+Read [Pi runtime prerequisites](../references/pi-runtime.md) before scheduling a wake, reading a transcript, or choosing where durable artifacts go.
+
 **You own the experiment design. Plan, blind, run, synthesize.**
 
 **Non-negotiables for blinding:**

@@ -1,5 +1,24 @@
 # @zenspc/pi-pstack
 
+## 0.9.0-duylvh.1
+
+### Minor Changes
+
+- Port the extension improvements from zenspc/pi-extensions 0.9.0, kept compatible with `@tintinweb/pi-subagents`.
+  - Restore Poteto Mode on `/tree` navigation and before every turn, state it explicitly when off, and keep the skill path in the prompt after compaction.
+  - Turn the mode off only on an exact `off`, `disable`, or `stop`, so tasks that start with those words still run.
+  - Refuse to activate the mode when the pstack skills are not loaded.
+  - Hide skills and inject the role table through Pi 1.4's structured system prompt instead of regex-stripping the rendered prompt.
+  - Keep inherited panel seats, report config problems once, refuse to overwrite a broken `models.json`, and expand `/pstack status`.
+- Add `pi-models.md` and `pi-runtime.md` guides, written for the `Agent` tool, and link them from the skills that need them. The sync script keeps both.
+- Skip zenspc's per-model thinking suffixes and `pi-subagents` acceptance rules, which target a different subagent package.
+
+## 0.8.0-duylvh.1
+
+### Minor Changes
+
+- Sync Cursor pstack 0.15.36 and split pi-pstack into its own repository.
+
 ## 0.6.0
 
 ### Minor Changes

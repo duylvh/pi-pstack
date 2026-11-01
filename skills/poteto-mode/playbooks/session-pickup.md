@@ -1,5 +1,7 @@
 ### Session pickup
 
+Read [Pi runtime prerequisites](../references/pi-runtime.md) before scheduling a wake, reading a transcript, or choosing where durable artifacts go.
+
 **You own the resume point. Read the prior trail, don't redo it.**
 
 1. Locate the prior trail. A local transcript under the active workspace's session directory (`~/.pi/agent/sessions/--<cwd with / as ->--/`. Do not glob across `~/.pi/agent/sessions/`, that crosses workspace boundaries and reads private chats from unrelated projects), an async run record, or a pushed branch. Read the metadata overview and last messages first, then scan back for the decision points. Parse a long transcript in a subagent and keep the reduced timeline in the main thread (the **principle-guard-the-context-window** skill). Pick each subagent's `thinking` level for the job, per the Subagents section.
