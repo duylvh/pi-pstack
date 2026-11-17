@@ -1,4 +1,10 @@
-# @zenspc/pi-pstack
+# @duylvh/pi-pstack
+
+## 0.10.0
+
+### Minor Changes
+
+- Rename the package to `@duylvh/pi-pstack`, with its script packages `@duylvh/pi-pstack-tools` and `@duylvh/pi-pstack-statechart`. Pi keys the install by its Git source, so existing installs keep working. The reground script writes the new names, so a Cursor sync keeps them.
 
 ## 0.9.1
 

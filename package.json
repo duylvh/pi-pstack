@@ -1,10 +1,10 @@
 {
-	"name": "@zenspc/pi-pstack",
-	"version": "0.9.1",
+	"name": "@duylvh/pi-pstack",
+	"version": "0.10.0",
 	"description": "pstack for Pi: rigorous agent workflows you can parallelize with confidence - poteto-mode playbooks, engineering principles, multi-model review panels, and subagents.",
 	"type": "module",
 	"license": "MIT",
-	"author": "dhairyaar",
+	"author": "duylvh",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/duylvh/pi-pstack.git"

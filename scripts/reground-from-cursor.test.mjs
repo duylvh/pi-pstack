@@ -250,7 +250,7 @@ test("file rules adapt scripts and reject an upstream edit that moves their targ
 	assert.match(plan, /lacks "Ten lanes at the PR head"/);
 
 	const pkg = render("skills/poteto-mode/scripts/package.json");
-	assert.match(pkg, /"name": "@zenspc\/pi-pstack-tools"/);
+	assert.match(pkg, /"name": "@duylvh\/pi-pstack-tools"/);
 	assert.match(pkg, /"test": "bun test watch-pr"/);
 
 	assert.match(

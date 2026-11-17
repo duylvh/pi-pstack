@@ -1,8 +1,8 @@
-# @zenspc/pi-pstack
+# @duylvh/pi-pstack
 
 pstack for Pi: rigorous agent workflows you can parallelize with confidence. Ported from the Cursor pstack plugin.
 
-This is the `duylvh/pi-pstack` fork, split out of `duylvh/pi-extensions` with its history. It tracks cursor/plugins `pstack` **0.15.36** at commit `ae5650febf4320793844c12c4adaa937f417f8da` and keeps the `@zenspc` package scope so existing settings still resolve. It follows semantic versioning from `0.9.1` on. It installs from Git, never from npm, so its versions don't collide with the npm `@zenspc/pi-pstack` releases. The pin lives in [`scripts/upstream-pin.json`](scripts/upstream-pin.json).
+It tracks cursor/plugins `pstack` **0.15.36** at commit `ae5650febf4320793844c12c4adaa937f417f8da`. The pin lives in [`scripts/upstream-pin.json`](scripts/upstream-pin.json), and `scripts/reground-from-cursor.mjs` regenerates the skills from it. The package installs from Git and follows semantic versioning.
 
 If you want to go fast, go deep first. pstack helps you write less, but higher quality code. It gives you fearless parallelism: when an agent goes deep and writes good, verifiable code, you can parallelize with confidence. Start multiple agents with `poteto-mode` and trust they will apply rigorous engineering principles to their work.
 
@@ -21,7 +21,7 @@ git clone https://github.com/duylvh/pi-pstack /path/to/pi-pstack
 pi install /path/to/pi-pstack
 ```
 
-Remove any `npm:@zenspc/pi-pstack`, `git:github.com/duylvh/pi-extensions`, or other pstack entry from your Pi settings first, because two copies of the same skills collide. Run only one of the Git and path installs.
+Remove any other pstack entry, such as `npm:@zenspc/pi-pstack` or `git:github.com/duylvh/pi-extensions`, from your Pi settings first, because two copies of the same skills collide. Run only one of the Git and path installs.
 
 Requires Pi 1.4 or later, which provides the structured system prompt the extension edits.
 

@@ -538,7 +538,7 @@ export const FILE_SEAMS = [
 		id: "tools-package-name",
 		files: ["skills/poteto-mode/scripts/package.json"],
 		cursor: /"name": "@cursor-skill\/poteto-mode-tools"/,
-		pi: '"name": "@zenspc/pi-pstack-tools"',
+		pi: '"name": "@duylvh/pi-pstack-tools"',
 	},
 	{
 		id: "tools-package-test",
@@ -550,7 +550,7 @@ export const FILE_SEAMS = [
 		id: "statechart-package-name",
 		files: ["skills/statechart/scripts/package.json"],
 		cursor: /"name": "@cursor-skill\/statechart"/,
-		pi: '"name": "@zenspc/pi-pstack-statechart"',
+		pi: '"name": "@duylvh/pi-pstack-statechart"',
 	},
 	{
 		id: "audit-transcripts",
