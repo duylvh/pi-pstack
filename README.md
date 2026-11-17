@@ -25,7 +25,7 @@ Remove any `npm:@zenspc/pi-pstack`, `git:github.com/duylvh/pi-extensions`, or ot
 
 Requires Pi 1.4 or later, which provides the structured system prompt the extension edits.
 
-Requires [`@tintinweb/pi-subagents`](https://www.npmjs.com/package/@tintinweb/pi-subagents) for the `Agent` tool behind `poteto-agent`, `comment-sicko`, and the workflow fan-outs (`how`, `why`, `arena`, `swarm`, `interrogate`, `reflect`). The package declares its agents through `pi.subagents.agents` in `package.json`. The skills use that package's `Agent` inputs (`subagent_type`, `model`, `thinking`, `run_in_background`, `isolation`, `resume`). They do not work with the unrelated npm `pi-subagents` package, whose `subagent()` tool takes different inputs.
+Requires [`@tintinweb/pi-subagents`](https://www.npmjs.com/package/@tintinweb/pi-subagents) for the `Agent` tool behind `poteto-agent`, `comment-sicko`, and the workflow fan-outs (`how`, `why`, `arena`, `swarm`, `interrogate`, `reflect`). The package declares its agents through `pi.subagents.agents` in `package.json`. The skills use that package's `Agent` inputs (`subagent_type`, `model`, `thinking`, `run_in_background`, `isolation`, `resume`). They follow `@tintinweb/pi-subagents` 0.26, which starts a `SubagentWorkflow` only when the user asks for one. They do not work with the unrelated npm `pi-subagents` package, whose `subagent()` tool takes different inputs.
 
 ## Get started
 
@@ -48,7 +48,7 @@ The other skills are Hidden; the mode skill uses them as needed.
 - **2 subagents** (loaded by `pi-subagents`):
   - `poteto-agent`: runs poteto's style end to end. Reads `poteto-mode` in full before any work.
   - `comment-sicko`: read-only comment reviewer that savors deletion. Usually invoked through the `no-comments` skill.
-- **Pi guides** under `poteto-mode/references/`: `pi-models.md` (how `Agent` resolves `model`, panel reporting, fallbacks, the Arena cross-judge) and `pi-runtime.md` (wakes, transcripts, delegated runs, artifact directories). The skills that need them link to them.
+- **Pi guides** under `poteto-mode/references/`: `pi-models.md` (how `Agent` resolves `model`, panel reporting, fallbacks, the Arena cross-judge) and `pi-runtime.md` (wakes, transcripts, delegated runs, workflows, artifact directories). The skills that need them link to them.
 - **Bundled scripts**: `poteto-mode/scripts/` ships the `watch-pr` watcher (babysit playbook), which runs under [bun](https://bun.sh). `statechart/scripts/` ships the TLA+ statechart compiler, which runs under Node 22.18+, Bun, or Deno and installs TLC and Java with mise on first run.
 
 ## Model roles
@@ -70,7 +70,7 @@ The mode is stored in the session, so it follows `/resume`, `/tree` navigation, 
   The four Discoverable skills are `how`, `why`, `unslop`, and `typescript-best-practices`.
 - Slash commands are `/skill:<name>` instead of `/name`.
 - Subagent delegation uses the `Agent` tool from `pi-subagents` (`Agent({ subagent_type, prompt, model, thinking, run_in_background, ... })`, with `get_subagent_result` and `steer_subagent`) instead of Cursor's Task tool. This package does not ship a replacement tool.
-  - Cursor's readonly spawn becomes a read-only instruction in the prompt on a `general-purpose` agent, because `Agent` has no readonly flag. Cursor's Ask mode warning becomes `isolated: true`, which strips MCP tools.
+  - Cursor's readonly spawn becomes a read-only instruction in the prompt on a `general-purpose` agent, because `Agent` has no readonly flag. Cursor's Ask mode warning becomes a ban on `isolated: true`, which strips MCP tools.
   - Cursor cloud agents become background agents with `isolation: "worktree"`. `pi-subagents` drops that field without an error when worktrees are disabled, so the generated instructions check the live `Agent` schema first. Without automatic isolation, create and verify real `git worktree`s before writers edit. Never run parallel writers in one checkout.
   - Cursor's per-slug reasoning budget becomes the `Agent` `thinking` input (`off` to `max`). The models file stores no budget.
 - Questions use `ask_user`, not `AskQuestion`. The tool comes from [`@mrclrchtr/supi-ask-user`](https://www.npmjs.com/package/@mrclrchtr/supi-ask-user), which the prompts depend on. This package does not install or ship it.

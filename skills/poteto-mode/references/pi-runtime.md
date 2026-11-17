@@ -1,6 +1,6 @@
 # Pi runtime prerequisites
 
-Read this before unattended work, before reading a transcript, and before choosing where durable artifacts go.
+Read this before unattended work, before reading a transcript, before running a workflow, and before choosing where durable artifacts go.
 These checks never widen delegation, merge, or push authority.
 
 ## Scheduling and wakes
@@ -30,8 +30,21 @@ If the session you need is unavailable, use a bounded digest of the visible conv
 ## Delegated runs
 
 For a delegate's work, use the `Agent` result and `get_subagent_result` (`verbose: true` returns its full conversation) for the agent ID you spawned.
-A delegate that ran with `isolation: "worktree"` names the branch holding its changes in its result. Verify that the branch and any worktree path belong to this task before you read them, and pass reviewers only those exact paths.
-Running delegates die with a restart. Pushed branches and open PRs survive, so reattach by branch and PR, not by agent ID.
+A delegate that ran with `isolation: "worktree"` names the `pi-agent-<id>` branch holding its changes in its result. Its worktree is already deleted. Verify that the branch belongs to this task before you read it, and pass reviewers only that branch.
+A restart kills running delegates. A finished delegate's result survives it, and `get_subagent_result` still answers by agent ID, without the conversation. Reattach unfinished work by its pushed branch and PR.
+
+## Workflows
+
+`SubagentWorkflow` runs a script that spawns many agents. pi-subagents 0.26 starts one only when the user asks for a workflow in their own words or names a saved one. A request for N agents is N parallel `Agent` calls.
+When the user asked for a workflow, carry pstack's spawn rules into each `agent()` call:
+
+- `agentType: "poteto-agent"` for delegates, or the `subagent_type` the routed skill names.
+- `model` from the role line, omitted for `inherit-parent` and `auto`.
+- `effort` carries the level you would pass to `Agent` as `thinking`.
+- `isolation: "worktree"` on every parallel writer. In a script only this option decides, not the agent file.
+- `gate` with the project's check command when a command can prove the work, instead of an agent judging it.
+- A `schema` must be valid JSON Schema draft-07. An unknown keyword such as `prefixItems` ends the run before any agent starts.
+- A failed `agent()` returns `null`. Filter nulls after every stage, read `agentError(label)` for the reason, and name each failed seat as [Pi review models](pi-models.md) requires.
 
 ## Durable artifacts
 

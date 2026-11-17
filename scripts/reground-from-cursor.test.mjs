@@ -210,6 +210,7 @@ test("worktree safety reaches poteto defaults, standalone swarm, chain rebases, 
 	assert.match(safety, /Before any edit, each writer must verify its assigned worktree with `pwd` and `git branch --show-current` and stop on a path or branch mismatch\./);
 	assert.match(safety, /Use absolute file paths under that worktree and `git -C <path>` for Git commands\./);
 	assert.match(safety, /If separate writer worktrees cannot be verified, do not fan out writers\./);
+	assert.match(safety, /Never resume it for a follow-up/);
 	assert.match(safety, /Topology operations \(chain rebases, force-pushes, base retargets\) run only in a verified separate worktree, even when serial, never in the coordinator's checkout\./);
 	assert.match(safety, /Never change user settings or fall back to the shared checkout to make a fan-out fit\. Read-only fan-out needs no isolation\.$/);
 

@@ -1,5 +1,14 @@
 # @zenspc/pi-pstack
 
+## 0.9.0-duylvh.2
+
+### Patch Changes
+
+- Align the subagent rules with `@tintinweb/pi-subagents` 0.26.
+  - Worktree safety: never resume a worktree agent for a follow-up. Its worktree is deleted when it finishes, so `Agent` refuses the resume or runs it unisolated in the coordinator's checkout. Orchestrate no longer resumes a worker for its worktree.
+  - `pi-runtime.md`: a finished delegate's result survives a restart through `get_subagent_result`. A new Workflows section maps pstack's spawn rules onto `SubagentWorkflow` `agent()` options for when the user asks for a workflow.
+  - poteto-mode defaults: fan out through `Agent`, not `SubagentWorkflow`, unless the user asked for a workflow.
+
 ## 0.9.0-duylvh.1
 
 ### Minor Changes
