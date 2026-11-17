@@ -2,7 +2,7 @@
 
 pstack for Pi: rigorous agent workflows you can parallelize with confidence. Ported from the Cursor pstack plugin.
 
-This is the `duylvh/pi-pstack` fork, split out of `duylvh/pi-extensions` with its history. It tracks cursor/plugins `pstack` **0.15.36** at commit `ae5650febf4320793844c12c4adaa937f417f8da` and keeps the `@zenspc` package scope so existing settings still resolve. The version `0.9.0-duylvh.1` tells it apart from the npm release. The pin lives in [`scripts/upstream-pin.json`](scripts/upstream-pin.json).
+This is the `duylvh/pi-pstack` fork, split out of `duylvh/pi-extensions` with its history. It tracks cursor/plugins `pstack` **0.15.36** at commit `ae5650febf4320793844c12c4adaa937f417f8da` and keeps the `@zenspc` package scope so existing settings still resolve. It follows semantic versioning from `0.9.1` on. It installs from Git, never from npm, so its versions don't collide with the npm `@zenspc/pi-pstack` releases. The pin lives in [`scripts/upstream-pin.json`](scripts/upstream-pin.json).
 
 If you want to go fast, go deep first. pstack helps you write less, but higher quality code. It gives you fearless parallelism: when an agent goes deep and writes good, verifiable code, you can parallelize with confidence. Start multiple agents with `poteto-mode` and trust they will apply rigorous engineering principles to their work.
 
