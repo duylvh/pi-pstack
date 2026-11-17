@@ -17,18 +17,21 @@ export const ROLE_NAMES = [
 	"hillclimb",
 	"judgment and prose",
 	"hardest tasks",
+	"arena runners",
+	"arena cross-judge pool",
+	"swarm workers",
+	"interrogate reviewers",
+] as const;
+
+const RETIRED_ROLES: ReadonlySet<string> = new Set([
 	"how explorer",
 	"how explainer",
 	"why investigators",
 	"why synthesizer",
 	"reflect tooling",
 	"reflect judgment, divergent, synthesizer",
-	"arena runners",
-	"arena cross-judge pool",
-	"swarm workers",
 	"architect runners",
-	"interrogate reviewers",
-] as const;
+]);
 
 export type RoleName = (typeof ROLE_NAMES)[number];
 export type RoleValue = string | string[];
@@ -41,7 +44,6 @@ export interface PstackConfig {
 export const LIST_ROLES: ReadonlySet<RoleName> = new Set([
 	"arena runners",
 	"arena cross-judge pool",
-	"architect runners",
 	"interrogate reviewers",
 ]);
 
@@ -121,6 +123,7 @@ export function parseConfig(raw: unknown, diagnostics: string[] = []): PstackCon
 		roles[role] = fallback.roles[role];
 	}
 	for (const [key, value] of Object.entries(raw.roles)) {
+		if (RETIRED_ROLES.has(key)) continue;
 		if (!ROLE_NAME_SET.has(key)) {
 			diagnostics.push("roles: unknown role ignored.");
 			continue;

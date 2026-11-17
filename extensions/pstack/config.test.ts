@@ -57,13 +57,15 @@ describe("parseConfig", () => {
 			roles: {
 				"bug-fix": "anthropic/claude-opus-4-6",
 				"not-a-role": "anthropic/claude-opus-4-6",
-				"how explorer": "no-slash",
+				"swarm workers": "no-slash",
+				"why investigators": "anthropic/claude-opus-4-6",
 				"arena runners": ["anthropic/ok", "bad", "__proto__/x"],
 			},
 		});
 		assert.equal(parsed.roles["bug-fix"], "anthropic/claude-opus-4-6");
 		assert.equal(parsed.roles["not-a-role"], undefined);
-		assert.equal(parsed.roles["how explorer"], "inherit-parent");
+		assert.equal(parsed.roles["swarm workers"], "inherit-parent");
+		assert.equal(parsed.roles["why investigators"], undefined);
 		assert.deepEqual(parsed.roles["arena runners"], ["anthropic/ok"]);
 
 		const wrongVersion = parseConfig({
@@ -220,7 +222,7 @@ describe("configuration diagnostics", () => {
 		assert.equal(readConfig(path).status, "loaded");
 		writeFileSync(path, JSON.stringify({ version: 1, skillsEnabled: "secret", roles: {
 			"bug-fix": "openai/good", "arena runners": ["inherit-parent", "secret", "openai/good"],
-			"how explorer": "secret", unknown: "secret",
+			"swarm workers": "secret", unknown: "secret", "architect runners": ["openai/good"],
 		} }));
 		const partial = readConfig(path);
 		assert.equal(partial.path, path);
@@ -228,7 +230,8 @@ describe("configuration diagnostics", () => {
 		assert.equal(partial.config.roles["bug-fix"], "openai/good");
 		assert.deepEqual(partial.config.roles["arena runners"], ["inherit-parent", "openai/good"]);
 		assert.match(partial.diagnostics.join("\n"), /arena runners.*\[1\]/);
-		assert.match(partial.diagnostics.join("\n"), /how explorer/);
+		assert.match(partial.diagnostics.join("\n"), /swarm workers/);
+		assert.doesNotMatch(partial.diagnostics.join("\n"), /architect runners/);
 		assert.match(partial.diagnostics.join("\n"), /unknown role/);
 		assert.match(partial.diagnostics.join("\n"), /skillsEnabled/);
 		assert.doesNotMatch(partial.diagnostics.join("\n"), /secret/);
@@ -388,12 +391,12 @@ describe("modelsForRole", () => {
 			version: 1,
 			roles: {
 				"bug-fix": "inherit-parent",
-				"how explorer": "auto",
+				"swarm workers": "auto",
 				"arena runners": ["anthropic/a", "inherit-parent", "auto", "openai/b"],
 			},
 		});
 		assert.deepEqual(modelsForRole(cfg, "bug-fix"), ["inherit-parent"]);
-		assert.deepEqual(modelsForRole(cfg, "how explorer"), ["auto"]);
+		assert.deepEqual(modelsForRole(cfg, "swarm workers"), ["auto"]);
 		assert.deepEqual(modelsForRole(cfg, "arena runners"), ["anthropic/a", "inherit-parent", "auto", "openai/b"]);
 		assert.deepEqual(modelsForRole(cfg, "hillclimb"), ["inherit-parent"]);
 	});

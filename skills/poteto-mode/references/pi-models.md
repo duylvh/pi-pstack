@@ -1,6 +1,6 @@
 # Review models in Pi
 
-Read this before Arena, Interrogate, or Architect's Arena runners spawn a panel.
+Read this before Arena or Interrogate spawns a panel.
 It covers how the `Agent` tool from `@tintinweb/pi-subagents` picks a model, and how to report what ran.
 
 ## Seats

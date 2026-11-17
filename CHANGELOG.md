@@ -1,5 +1,14 @@
 # @duylvh/pi-pstack
 
+## 0.11.0
+
+### Minor Changes
+
+- Sync Cursor pstack 0.15.43 (`e1cc031`). Skill texts are shorter, `how` and `why` each fit in one file, `poteto-mode/worker.md` carries the operator's rules into every agent kickoff, and the Orchestrate playbook and `check-plan.mjs` are gone.
+- Retire the roles upstream no longer reads: `how explorer`, `how explainer`, `why investigators`, `why synthesizer`, `reflect tooling`, `reflect judgment, divergent, synthesizer`, and `architect runners`. The extension ignores them without a warning, so an existing `models.json` still loads. `how` now reads `judgment and prose`.
+- Port the new upstream text to Pi: arena runners and judge, the `how` explainer spawn, the kickoff rule for `Agent` and `SubagentWorkflow` agents, and `deslop` and verification routing. The Cursor default-model list is dropped from `poteto-mode`, and `gemini-*` slugs now count as Cursor leftovers.
+- Drop the `tools-package-test` rule, now that upstream ships the same test script.
+
 ## 0.10.0
 
 ### Minor Changes

@@ -1,6 +1,6 @@
 {
 	"name": "@duylvh/pi-pstack",
-	"version": "0.10.0",
+	"version": "0.11.0",
 	"description": "pstack for Pi: rigorous agent workflows you can parallelize with confidence - poteto-mode playbooks, engineering principles, multi-model review panels, and subagents.",
 	"type": "module",
 	"license": "MIT",
@@ -51,7 +51,7 @@
 		}
 	},
 	"scripts": {
-		"test": "node --experimental-strip-types --test extensions/pstack/*.test.ts skills/poteto-mode/scripts/check-plan.test.mjs scripts/reground-from-cursor.test.mjs"
+		"test": "node --experimental-strip-types --test extensions/pstack/*.test.ts scripts/reground-from-cursor.test.mjs"
 	},
 	"devDependencies": {
 		"@earendil-works/pi-ai": "1.4.0",

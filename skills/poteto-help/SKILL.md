@@ -27,7 +27,7 @@ Check the state that changes the answer, and mention it only when it does:
 - No `~/.pi/agent/pstack/models.json` means `/setup-pstack` hasn't run for this user, so every role runs on the parent session model.
 - No `verify-*` skill or other app harness in the project means agents have no scripted way to drive the app. Mention `/skill:create-verification-skill` when the question is about proving a change works.
 - No formal verification skill in the project means no property is checked past what tests reach. Mention `/skill:create-formal-verification-skill` when the question is about a race, an invariant, or another case tests rarely hit. When one exists and the code it covers changed after the commit it records as last in sync, mention `/skill:maintain-formal-verification-skill` if the question touches that code.
-- No `Agent` tool in this session means the `pi-subagents` package is not installed, so the fan-out skills (`how`, `why`, `arena`, `swarm`, `interrogate`, `reflect`) and `poteto-agent` cannot spawn anything.
+- No `Agent` tool in this session means the `pi-subagents` package is not installed, so the skills that spawn agents (`how`, `arena`, `swarm`, `interrogate`, `no-comments`) and `poteto-agent` cannot spawn anything.
 
 When the models file is missing and it matters, ask whether the user wants to pick a model for each role now. It matters when the user is new, the question is about setup or cost, or the answer depends on which models run. Ask at most once per chat. If the need is also unclear, ask both questions together. Offer two choices:
 
@@ -105,17 +105,16 @@ Close calls:
 
 - `/skill:how` explains what the code does. `/skill:why` explains the reasons. `/skill:teach` runs one or both and explains the result plainly.
 - `/skill:arena` gives every worker the same brief and merges the best parts. `/skill:swarm` splits work into slices or a race and returns one report.
-- `/skill:architect` implements right after it settles the design. Add "with checkpoint" to review the design before it writes code.
 - `/skill:interrogate` reviews the diff. `/skill:blast-radius` looks for breakage outside the diff and proves the one fact that makes the change safe.
 - `/skill:recall` rebuilds context across recent sessions. `/skill:ketchup` covers only this chat since the user's last message. Resuming one specific session or branch is the Session pickup playbook.
-- `/skill:figure-it-out` designs one rigorous run. The Orchestrate playbook runs a program that spans days and many PRs. The Autonomous run playbook drives one task to a finish condition.
+- `/skill:figure-it-out` designs one rigorous run. The Autonomous run playbook drives one task to a finish condition.
 
 Not in this package:
 
 - `control-cli` and `control-ui`. Use the project's own verification skill, or generate one with `/skill:create-verification-skill`.
 - A loop command. Recurring wakes need a scheduler tool in the session, and authoring a skill follows the Authoring playbook.
 - `make-bot-ui` and the benny automations, which depend on a hosted automation service.
-- An `/orchestrate` skill. Orchestrate is a `/poteto-mode` playbook.
+- An `/orchestrate` skill or playbook.
 
 ## Playbooks and principles
 

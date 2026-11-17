@@ -36,6 +36,12 @@ Bundled skills live at \`../<name>/SKILL.md\` from this file.
 
 **Defaults for every \`Task\` call.** \`run_in_background: true\`, agent mode (readonly strips MCP), explicit model per role. Defaults \`grok-4.7-xhigh-fast\` for code.
 
+- Code, prose, and judgment: \`claude-opus-5-5-xhigh-fast\`.
+- Trivial mechanical edits: \`claude-opus-5-5-high-fast\`.
+- Diverse review and design panels: one runner each on \`claude-fable-5-2-high\` and \`gemini-4-carbon-high\`.
+
+**Fable 5.2 is an exception.** It runs outside a panel only when the user named it.
+
 **Match the model to the job.** The \`/setup-pstack\` budget sets each role's starting level. Use fast mode only when urgent.
 `;
 
@@ -56,15 +62,10 @@ About to \`AskQuestion\` here? Run /deslop first. See [\`/how\`](../how/SKILL.md
 	"skills/principle-demo/SKILL.md": "---\nname: principle-demo\ndescription: demo\ndisable-model-invocation: true\n---\n\n- A rule. Not a slug: gpt-4o.\n",
 	"skills/poteto-mode/SKILL.md": POTETO_MODE,
 	"skills/poteto-mode/playbooks/feature.md": "1. Delegate with `subagent_type: \"poteto-agent\"`.\n",
-	"skills/poteto-mode/scripts/check-plan.mjs": `const LANES = /Ten lanes on \`[^\`<>]+\` at the PR head/;
-const PROGRAM_MARKERS = ["git show origin/main:", "/loop 1h", "status message"];
-fail(\`lacks "Ten lanes on \\\`<swarm workers model>\\\` at the PR head" with the model filled in\`);
-`,
-	"skills/poteto-mode/scripts/check-plan.test.ts": "// upstream bun test\n",
 	"skills/poteto-mode/scripts/package.json": `{
   "name": "@cursor-skill/poteto-mode-tools",
   "scripts": {
-    "test": "bun test watch-pr check-plan.test.ts"
+    "test": "bun test watch-pr"
   }
 }
 `,
@@ -84,7 +85,6 @@ const FIXTURE_TARGET = {
 	"skills/poteto-help/SKILL.md": "---\nname: poteto-help\ndescription: Pi help\ndisable-model-invocation: true\n---\n\nPi owned.\n",
 	"skills/setup-pstack/SKILL.md": "---\nname: setup-pstack\ndescription: Pi\ndisable-model-invocation: true\n---\n",
 	"skills/stale/SKILL.md": "---\nname: stale\ndescription: removed upstream\ndisable-model-invocation: true\n---\n",
-	"skills/poteto-mode/scripts/check-plan.test.mjs": "// pi owned test\n",
 	"extensions/pstack/skill-catalog.test.ts":
 		"assert.equal(skills.length, 1);\nassert.equal(skills.filter((skill) => skill.hidden).length, 0);\nassert.equal(hidden.length, 0);\n",
 	"README.md": "**1 skills**, not all 1, 1 playbooks, 1 principle skills\n",
@@ -139,11 +139,8 @@ test("classify assigns each path its owner", () => {
 		"skills/make-bot-ui/SKILL.md": "never-copy",
 		"skills/principle-explain-the-number/SKILL.md": "copy",
 		"agents/poteto-agent.md": "never-copy",
-		"skills/poteto-mode/scripts/check-plan.mjs": "adapt",
 		"skills/poteto-mode/scripts/package.json": "adapt",
 		"skills/poteto-mode/scripts/worktree-audit.sh": "adapt",
-		"skills/poteto-mode/scripts/check-plan.test.mjs": "pi-only",
-		"skills/poteto-mode/scripts/check-plan.test.ts": "never-copy",
 		"skills/poteto-mode/scripts/bun.lock": "pi-only",
 		"skills/poteto-mode/references/pi-models.md": "pi-only",
 		"skills/poteto-mode/references/pi-runtime.md": "pi-only",
@@ -162,14 +159,12 @@ test("plan writes copy and adapt files, skips Pi-owned and Cursor-only files, de
 	for (const rel of [
 		"skills/poteto-help/SKILL.md",
 		"skills/make-bot-ui/SKILL.md",
-		"skills/poteto-mode/scripts/check-plan.test.ts",
 		"agents/poteto-agent.md",
 	]) {
 		assert.equal(byRel.get(rel).kind, "skip", rel);
 	}
 	assert.equal(byRel.get("skills/stale/SKILL.md").kind, "delete");
 	assert.equal(byRel.has("skills/setup-pstack/SKILL.md"), false);
-	assert.equal(byRel.has("skills/poteto-mode/scripts/check-plan.test.mjs"), false);
 
 	assert.deepEqual(planned.counts, { total: 5, discoverable: 4, hidden: 1, principles: 1, playbooks: 1 });
 	assert.deepEqual(
@@ -236,18 +231,13 @@ test("poteto-mode patch states the Pi model and thinking contract and fails loud
 	assert.match(out, /\*\*Defaults for every `Agent` call\.\*\* `run_in_background: true`/);
 	assert.match(out, /Never pass `isolated: true`, because it strips MCP tools\./);
 	assert.match(out, /pick the `thinking` level the job needs \(`off`, `minimal`, `low`, `medium`, `high`, `xhigh`, or `max`\)/);
-	assert.doesNotMatch(out, /fast mode only when|grok-|budget sets/);
+	assert.doesNotMatch(out, /fast mode only when|grok-|budget sets|Fable|gemini-/);
 	assert.throws(() => patchPotetoModePi("# Poteto mode\n\nnothing\n"), /patch target missing: defaults/);
 });
 
 test("file rules adapt scripts and reject an upstream edit that moves their target", () => {
 	const { from, to } = makeFixture();
 	const render = (rel) => renderWrite({ rel, class: "adapt" }, { from, to });
-
-	const plan = render("skills/poteto-mode/scripts/check-plan.mjs");
-	assert.match(plan, /const LANES = \/Ten lanes \(\?:on `\[\^`<>\]\+` \)\?at the PR head\/;/);
-	assert.match(plan, /"hourly recurring wake"/);
-	assert.match(plan, /lacks "Ten lanes at the PR head"/);
 
 	const pkg = render("skills/poteto-mode/scripts/package.json");
 	assert.match(pkg, /"name": "@duylvh\/pi-pstack-tools"/);
@@ -264,7 +254,7 @@ test("file rules adapt scripts and reject an upstream edit that moves their targ
 
 test("sync converges: the second run changes no byte and Pi-owned files survive", () => {
 	const { from, to } = makeFixture();
-	const piOwned = ["skills/poteto-help/SKILL.md", "skills/setup-pstack/SKILL.md", "skills/poteto-mode/scripts/check-plan.test.mjs"];
+	const piOwned = ["skills/poteto-help/SKILL.md", "skills/setup-pstack/SKILL.md"];
 	const before = hashTree(to);
 
 	main(["--from", from, "--to", to]);
@@ -272,7 +262,6 @@ test("sync converges: the second run changes no byte and Pi-owned files survive"
 	for (const rel of piOwned) assert.equal(first[rel], before[rel], rel);
 	assert.equal(existsSync(join(to, "skills/stale")), false);
 	assert.equal(existsSync(join(to, "skills/make-bot-ui")), false);
-	assert.equal(existsSync(join(to, "skills/poteto-mode/scripts/check-plan.test.ts")), false);
 	assert.match(readFileSync(join(to, "extensions/pstack/skill-catalog.test.ts"), "utf8"), /skills\.length, 5\)/);
 	assert.match(readFileSync(join(to, "README.md"), "utf8"), /\*\*5 skills\*\*, not all 5/);
 
@@ -284,7 +273,7 @@ test("Pi reference links land once under the heading and fail loudly without one
 	const arena = addPiReferenceLinks("---\nname: arena\n---\n\n# Arena\n\nBody.\n", "skills/arena/SKILL.md");
 	assert.match(arena, /# Arena\n\nRead \[Pi review models\]\(\.\.\/poteto-mode\/references\/pi-models\.md\)/);
 	assert.equal(addPiReferenceLinks(arena, "skills/arena/SKILL.md"), arena);
-	const playbook = addPiReferenceLinks("### Orchestrate\n\nBody.\n", "skills/poteto-mode/playbooks/orchestrate.md");
+	const playbook = addPiReferenceLinks("### Shipping\n\nBody.\n", "skills/poteto-mode/playbooks/shipping.md");
 	assert.match(playbook, /\[Pi runtime prerequisites\]\(\.\.\/references\/pi-runtime\.md\)/);
 	assert.equal(addPiReferenceLinks("Body.\n", "skills/how/SKILL.md"), "Body.\n");
 	assert.throws(() => addPiReferenceLinks("No heading.\n", "skills/arena/SKILL.md"), /no heading/);

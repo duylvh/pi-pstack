@@ -17,9 +17,9 @@ If the command is unavailable, write that JSON yourself:
 - never write a selector you have not confirmed is available
 - start every role at `inherit-parent` unless the user chose a model
 
-Roles: feature, refactoring; bug-fix; perf-issue; hillclimb; judgment and prose; hardest tasks; how explorer; how explainer; why investigators; why synthesizer; reflect tooling; reflect judgment, divergent, synthesizer; arena runners; arena cross-judge pool; swarm workers; architect runners; interrogate reviewers.
+Roles: feature, refactoring; bug-fix; perf-issue; hillclimb; judgment and prose; hardest tasks; arena runners; arena cross-judge pool; swarm workers; interrogate reviewers. The extension ignores the retired roles `how explorer`, `how explainer`, `why investigators`, `why synthesizer`, `reflect tooling`, `reflect judgment, divergent, synthesizer`, and `architect runners`, so drop them when you rewrite the file.
 
-Panel roles (`arena runners`, `arena cross-judge pool`, `architect runners`, `interrogate reviewers`) are arrays: one subagent per entry. `arena cross-judge pool` runs one judge: Arena tries only entries from a model family other than the parent's, in list order, so order it by preference. An `inherit-parent` or `auto` entry never judges.
+Panel roles (`arena runners`, `arena cross-judge pool`, `interrogate reviewers`) are arrays: one subagent per entry. `arena cross-judge pool` runs one judge: Arena tries only entries from a model family other than the parent's, in list order, so order it by preference. An `inherit-parent` or `auto` entry never judges.
 
 The file stores no reasoning budget. Each `Agent` spawn sets `thinking` (`off`, `minimal`, `low`, `medium`, `high`, `xhigh`, or `max`) per the Subagents section of `poteto-mode`, and a budget the user states in the task sets the starting level.
 

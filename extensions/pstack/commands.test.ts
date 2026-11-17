@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test, type TestContext } from "node:test";
 import type { ExtensionAPI, ExtensionContext, RegisteredCommand } from "@earendil-works/pi-coding-agent";
-import { configPath, defaultConfig, loadConfig, saveConfig } from "./config.ts";
+import { configPath, defaultConfig, loadConfig, ROLE_NAMES, saveConfig } from "./config.ts";
 import pstackExtension from "./index.ts";
 
 function harness(t: TestContext, hasUI = true) {
@@ -50,12 +50,14 @@ function harness(t: TestContext, hasUI = true) {
 	};
 }
 
+const ROLES_BEFORE_ARENA = ROLE_NAMES.indexOf("arena runners");
+
 test("setup preserves inherited seats before and after explicit models", async (t) => {
 	for (const seats of [["inherit-parent", "openai/example", "auto"], ["openai/example", "inherit-parent"]]) {
 		await t.test(seats.join(", "), async (t) => {
 			const h = harness(t);
 			assert.ok(saveConfig(defaultConfig()));
-			h.choices.push(...Array(12).fill("inherit-parent (current)"), ...seats, "done");
+			h.choices.push(...Array(ROLES_BEFORE_ARENA).fill("inherit-parent (current)"), ...seats, "done");
 			await h.run("setup-pstack");
 			assert.deepEqual(loadConfig().config.roles["arena runners"], seats);
 		});
@@ -67,7 +69,7 @@ test("setup offers no thinking-effort prompt; Agent takes thinking per spawn", a
 	h.context.modelRegistry.getAvailable = () => [
 		{ provider: "openai", id: "example", reasoning: true },
 	] as ReturnType<typeof h.context.modelRegistry.getAvailable>;
-	h.choices.push("openai/example", ...Array(11).fill("inherit-parent"), "openai/example", "auto", "done");
+	h.choices.push("openai/example", ...Array(ROLES_BEFORE_ARENA - 1).fill("inherit-parent"), "openai/example", "auto", "done");
 	await h.run("setup-pstack");
 	const config = loadConfig().config;
 	assert.equal(config.roles["feature, refactoring"], "openai/example");

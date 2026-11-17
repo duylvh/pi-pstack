@@ -19,7 +19,7 @@ const EXTENSION_COMMANDS = new Set(["/poteto-mode", "/setup-pstack", "/pstack"])
 const CURSOR_FRONTMATTER_KEYS = new Set(["mode", "icon", "color", "reminder", "paths"]);
 
 const CURSOR_SLUG =
-	"(?:claude|grok|gpt|composer)-[a-z0-9.]+(?:-[a-z0-9.]+)*?-(?:max|xhigh|high|medium|low)(?:-fast)?(?![a-z0-9-])";
+	"(?:claude|grok|gpt|composer|gemini)-[a-z0-9.]+(?:-[a-z0-9.]+)*?-(?:max|xhigh|high|medium|low)(?:-fast)?(?![a-z0-9-])";
 export const CURSOR_SLUG_RE = new RegExp(`(?<![\\w-])${CURSOR_SLUG}`);
 const CURSOR_DEFAULT_SLUGS = new RegExp(
 	"`?" + CURSOR_SLUG + "`?(?:\\s*,\\s*`?" + CURSOR_SLUG + "`?)*",
@@ -37,12 +37,10 @@ export const CLASS_RULES = [
 	{ pattern: "README.md", class: "never-copy" },
 	{ pattern: "LICENSE", class: "never-copy" },
 
-	{ pattern: "skills/poteto-mode/scripts/check-plan.test.ts", class: "never-copy" },
 
 	{ pattern: "skills/deslop/**", class: "pi-only" },
 	{ pattern: "skills/setup-pstack/SKILL.md", class: "pi-only" },
 	{ pattern: "skills/poteto-help/SKILL.md", class: "pi-only" },
-	{ pattern: "skills/poteto-mode/scripts/check-plan.test.mjs", class: "pi-only" },
 	{ pattern: "skills/poteto-mode/scripts/bun.lock", class: "pi-only" },
 	{ pattern: "skills/poteto-mode/references/pi-models.md", class: "pi-only" },
 	{ pattern: "skills/poteto-mode/references/pi-runtime.md", class: "pi-only" },
@@ -81,6 +79,32 @@ const WORKTREE_SAFETY =
 // Match whole Cursor instructions before replacing individual tool names.
 export const SEAMS = [
 	{ id: "ask-question", cursor: /AskQuestion/g, pi: "ask_user" },
+	{
+		id: "kickoff-agents",
+		cursor: /whether a Task subagent or a Project worker/g,
+		pi: "whether an `Agent` subagent or a `SubagentWorkflow` `agent()` call",
+	},
+	{ id: "deslop-plugin", cursor: /`\/deslop` from the `cursor-team-kit` plugin/g, pi: "**deslop**" },
+	{
+		id: "control-from-kit",
+		cursor: /`control-ui` or `control-cli` from `cursor-team-kit`/g,
+		pi: VERIFY_HARNESS,
+	},
+	{
+		id: "arena-runners",
+		cursor: /3\. Pick the runners from the `arena runners` line[^\n]*/g,
+		pi: "3. Pick the runners from the `arena runners` line in `~/.pi/agent/pstack/models.json`, by default two `inherit-parent` seats. An `auto` or `inherit-parent` entry is the parent model, so omit `model` for it. A model's vendor is its provider, the text before the slash in `provider/id`. If the `Agent` tool rejects an entry, run that seat with `model` omitted, keep at least two runners, and say so. Spawn more for multiple design directions, and repeat one model when the work is generation-bound, not judgment-sensitive. Pick each subagent's `thinking` level per the Subagents section of the **poteto-mode** skill.",
+	},
+	{
+		id: "arena-judge",
+		cursor: /After all Phase B candidates complete, spawn one readonly judge[^\n]*/g,
+		pi: "After all Phase B candidates complete, spawn one judge from the `arena cross-judge pool` line in `~/.pi/agent/pstack/models.json`, as an `Agent` call with `subagent_type: \"general-purpose\"` and a prompt that forbids edits. The judge is never from the parent's vendor, so use the first entry from another vendor. An `auto` or `inherit-parent` entry is the parent model, so it never judges, and the default all-`inherit-parent` pool gets no judge. If you do not know the parent's model, use the first real entry and say that the vendor check did not run. If the `Agent` tool rejects an entry, try the next entry from another vendor or skip the judge, and say so. While you read in Phase D, the judge scores each candidate, by path label, on each rubric criterion and recommends a base.",
+	},
+	{
+		id: "how-explainer",
+		cursor: /Spawn one Task subagent with `subagent_type: generalPurpose` and `readonly: true` that explores and explains in one pass\./g,
+		pi: "Spawn one `Agent` subagent with `subagent_type: \"general-purpose\"`, `model` from the `judgment and prose` line (omitted for `inherit-parent` or `auto`), and a prompt that forbids edits, because `Agent` has no readonly flag. It explores and explains in one pass.",
+	},
 
 	{
 		id: "orch-worker",
@@ -467,11 +491,6 @@ export const SEAMS = [
 		pi: "Ten lanes at the PR head",
 	},
 	{
-		id: "check-plan-path",
-		cursor: /node pstack\/skills\/poteto-mode\/scripts\/check-plan\.mjs/g,
-		pi: "node skills/poteto-mode/scripts/check-plan.mjs",
-	},
-	{
 		id: "standing-goal",
 		cursor: /arm a `\/goal` with this exact text/g,
 		pi: "record a standing goal with this exact text",
@@ -517,34 +536,10 @@ export const SEAMS = [
 
 export const FILE_SEAMS = [
 	{
-		id: "plan-lanes",
-		files: ["skills/poteto-mode/scripts/check-plan.mjs"],
-		cursor: /const LANES = [^\n]+;/,
-		pi: "const LANES = /Ten lanes (?:on `[^`<>]+` )?at the PR head/;",
-	},
-	{
-		id: "plan-lanes-message",
-		files: ["skills/poteto-mode/scripts/check-plan.mjs"],
-		cursor: /lacks "Ten lanes on \\`<swarm workers model>\\` at the PR head" with the model filled in/,
-		pi: 'lacks "Ten lanes at the PR head"',
-	},
-	{
-		id: "plan-tick-marker",
-		files: ["skills/poteto-mode/scripts/check-plan.mjs"],
-		cursor: /"\/loop 1h"/,
-		pi: '"hourly recurring wake"',
-	},
-	{
 		id: "tools-package-name",
 		files: ["skills/poteto-mode/scripts/package.json"],
 		cursor: /"name": "@cursor-skill\/poteto-mode-tools"/,
 		pi: '"name": "@duylvh/pi-pstack-tools"',
-	},
-	{
-		id: "tools-package-test",
-		files: ["skills/poteto-mode/scripts/package.json"],
-		cursor: /bun test watch-pr check-plan\.test\.ts/,
-		pi: "bun test watch-pr",
 	},
 	{
 		id: "statechart-package-name",
@@ -728,7 +723,7 @@ const POTETO_INTRO = [
 ].join("\n");
 
 const SUBAGENT_DEFAULTS =
-	"**Defaults for every `Agent` call.** `run_in_background: true`, file pointers not inlined context, explicit `model` per role. Every role defaults to the parent session model (`inherit-parent`; omit `model`). `/setup-pstack` writes `~/.pi/agent/pstack/models.json`, and the injected pstack role table lists only roles with a real provider-qualified slug. Pass that slug as `model`. `inherit-parent` and `auto` mean omit `model`. Never pass `isolated: true`, because it strips MCP tools. pstack fans out through `Agent`, not `SubagentWorkflow`. Run a workflow only when the user asked for one, and then follow the workflow rules in [Pi runtime prerequisites](references/pi-runtime.md). Code delegates tier by difficulty. The hardest changes (cross-cutting design, gnarly concurrency, subtle algorithms) go to the model configured for `hardest tasks`, else the parent model, when the task needs judgment or the intent is vague, and to your strongest instruction-following model when the work is a precisely specified sequence of steps to execute to the letter. Trivial mechanical edits go to your fast code model. Per-role lines in the injected pstack role table override these defaults and the model choices in the routed skills (`how`, `why`, `arena`, `swarm`, `architect`, `interrogate`, `reflect`). A role with no line keeps its default, and a role line of `inherit-parent` or `auto` runs that role on the parent chat model (omit `model`). Each code playbook's configured model comes from its line (`feature, refactoring`, `bug-fix`, `perf-issue`, or `hillclimb`), and the hardest changes read `hardest tasks`. Prose and judgment read `judgment and prose`.";
+	"**Defaults for every `Agent` call.** `run_in_background: true`, file pointers not inlined context, explicit `model` per role. Every role defaults to the parent session model (`inherit-parent`; omit `model`). `/setup-pstack` writes `~/.pi/agent/pstack/models.json`, and the injected pstack role table lists only roles with a real provider-qualified slug. Pass that slug as `model`. `inherit-parent` and `auto` mean omit `model`. Never pass `isolated: true`, because it strips MCP tools. pstack fans out through `Agent`, not `SubagentWorkflow`. Run a workflow only when the user asked for one, and then follow the workflow rules in [Pi runtime prerequisites](references/pi-runtime.md). Code delegates tier by difficulty. The hardest changes (cross-cutting design, gnarly concurrency, subtle algorithms) go to the model configured for `hardest tasks`, else the parent model, when the task needs judgment or the intent is vague, and to your strongest instruction-following model when the work is a precisely specified sequence of steps to execute to the letter. Trivial mechanical edits go to your fast code model. Per-role lines in the injected pstack role table override these defaults and the model choices in the routed skills (`how`, `arena`, `swarm`, `interrogate`). A role with no line keeps its default, and a role line of `inherit-parent` or `auto` runs that role on the parent chat model (omit `model`). Each code playbook's configured model comes from its line (`feature, refactoring`, `bug-fix`, `perf-issue`, or `hillclimb`), and the hardest changes read `hardest tasks`. Prose and judgment read `judgment and prose`.";
 
 const MATCH_MODEL =
 	"**Match the model to the job.** Before each spawn, start from the role's line or default and pick the `thinking` level the job needs (`off`, `minimal`, `low`, `medium`, `high`, `xhigh`, or `max`). Omit `thinking` to run at the agent's own default level. If the user states a reasoning budget, such as \"max reasoning\" or \"keep it cheap\", that sets the starting level for every spawn. Raise it one step, up to `max`, for the hardest or subtlest work. Lower it one step for judgment and two or more steps for routine work. The `Agent` tool has no fast-mode variant, so choose speed through the model alone. Verification is the exception and stays on the `swarm workers` model. Change only `thinking` and keep the model the role names, so a diverse panel stays diverse. A role on `auto` or `inherit-parent` stays on the parent model. Pi clamps a level the model does not support, so do not retry with another level. Never append a level to `model` (`provider/id:high`); see [Pi review models](references/pi-models.md).";
@@ -745,6 +740,12 @@ export function patchPotetoModePi(text) {
 		/\*\*Defaults for every `Task` call\.\*\*[^\n]*/,
 		`${SUBAGENT_DEFAULTS}\n\n${WORKTREE_SAFETY}`,
 		"defaults",
+	);
+	text = replaceRequired(
+		text,
+		/\n- Code, prose, and judgment: [^\n]*\n- Trivial mechanical edits: [^\n]*\n- Diverse review and design panels: [^\n]*\n\n\*\*Fable 5\.2 is an exception\.\*\*[^\n]*\n/,
+		"",
+		"cursor default models",
 	);
 	text = replaceRequired(text, /\*\*Match the model to the job\.\*\*[^\n]*/, MATCH_MODEL, "match the model");
 	return text;
@@ -888,7 +889,7 @@ export const PI_REFERENCE_LINKS = [
 		target: PI_MODELS,
 		label: "Pi review models",
 		reason: "before spawning a panel. It covers how `Agent` resolves `model`, and how to report the models that ran",
-		files: ["skills/arena/SKILL.md", "skills/interrogate/SKILL.md", "skills/architect/SKILL.md"],
+		files: ["skills/arena/SKILL.md", "skills/interrogate/SKILL.md"],
 	},
 	{
 		target: PI_RUNTIME,
@@ -906,7 +907,6 @@ export const PI_REFERENCE_LINKS = [
 			"skills/poteto-mode/playbooks/eval.md",
 			"skills/poteto-mode/playbooks/hillclimb.md",
 			"skills/poteto-mode/playbooks/multi-phase-plan.md",
-			"skills/poteto-mode/playbooks/orchestrate.md",
 			"skills/poteto-mode/playbooks/session-pickup.md",
 			"skills/poteto-mode/playbooks/shipping.md",
 		],

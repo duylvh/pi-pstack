@@ -2,7 +2,7 @@
 
 pstack for Pi: rigorous agent workflows you can parallelize with confidence. Ported from the Cursor pstack plugin.
 
-It tracks cursor/plugins `pstack` **0.15.36** at commit `ae5650febf4320793844c12c4adaa937f417f8da`. The pin lives in [`scripts/upstream-pin.json`](scripts/upstream-pin.json), and `scripts/reground-from-cursor.mjs` regenerates the skills from it. The package installs from Git and follows semantic versioning.
+It tracks cursor/plugins `pstack` **0.15.43** at commit `e1cc03121a0e71129a4fb730d7c5528a0a3e43c8`. The pin lives in [`scripts/upstream-pin.json`](scripts/upstream-pin.json), and `scripts/reground-from-cursor.mjs` regenerates the skills from it. The package installs from Git and follows semantic versioning.
 
 If you want to go fast, go deep first. pstack helps you write less, but higher quality code. It gives you fearless parallelism: when an agent goes deep and writes good, verifiable code, you can parallelize with confidence. Start multiple agents with `poteto-mode` and trust they will apply rigorous engineering principles to their work.
 
@@ -25,7 +25,7 @@ Remove any other pstack entry, such as `npm:@zenspc/pi-pstack` or `git:github.co
 
 Requires Pi 1.4 or later, which provides the structured system prompt the extension edits.
 
-Requires [`@tintinweb/pi-subagents`](https://www.npmjs.com/package/@tintinweb/pi-subagents) for the `Agent` tool behind `poteto-agent`, `comment-sicko`, and the workflow fan-outs (`how`, `why`, `arena`, `swarm`, `interrogate`, `reflect`). The package declares its agents through `pi.subagents.agents` in `package.json`. The skills use that package's `Agent` inputs (`subagent_type`, `model`, `thinking`, `run_in_background`, `isolation`, `resume`). They follow `@tintinweb/pi-subagents` 0.26, which starts a `SubagentWorkflow` only when the user asks for one. They do not work with the unrelated npm `pi-subagents` package, whose `subagent()` tool takes different inputs.
+Requires [`@tintinweb/pi-subagents`](https://www.npmjs.com/package/@tintinweb/pi-subagents) for the `Agent` tool behind `poteto-agent`, `comment-sicko`, and the skills that spawn agents (`how`, `arena`, `swarm`, `interrogate`, `no-comments`). The package declares its agents through `pi.subagents.agents` in `package.json`. The skills use that package's `Agent` inputs (`subagent_type`, `model`, `thinking`, `run_in_background`, `isolation`, `resume`). They follow `@tintinweb/pi-subagents` 0.26, which starts a `SubagentWorkflow` only when the user asks for one. They do not work with the unrelated npm `pi-subagents` package, whose `subagent()` tool takes different inputs.
 
 ## Get started
 
@@ -42,7 +42,7 @@ The other skills are Hidden; the mode skill uses them as needed.
 ## What you get
 
 - **58 skills**, including:
-  - `poteto-mode`: the main entry point. Reads your request, matches one of 23 playbooks (bug fix, perf, feature, refactoring, investigation, shipping, orchestrate, autopilot, and more), copies its steps in verbatim, and routes to the other skills as steps fire.
+  - `poteto-mode`: the main entry point. Reads your request, matches one of 22 playbooks (bug fix, perf, feature, refactoring, investigation, shipping, autopilot, and more), copies its steps in verbatim, and routes to the other skills as steps fire.
   - Workflow skills: `how`, `why`, `recall`, `blast-radius`, `architect`, `arena`, `swarm`, `interrogate`, `reflect`, `teach`, `tdd`, `no-comments`, `unslop`, `deslop`, `bro`, `figure-it-out`, `show-me-your-work`, `create-verification-skill`, `maintain-verification-skill`, `create-formal-verification-skill`, `maintain-formal-verification-skill`, `statechart`, `automate-me`, `technical-writing`, `typescript-best-practices`, `poteto-help`, `ketchup`, `ketchup-video`, `correct`, `sharpen`, `in-your-own-words`, `benchmark-checklist`.
   - 24 principle skills (`principle-laziness-protocol`, `principle-model-the-domain`, `principle-prove-it-works`, ...), one rule each, indexed inline by `poteto-mode`.
 - **2 subagents** (loaded by `pi-subagents`):
@@ -91,7 +91,7 @@ node scripts/reground-from-cursor.mjs --from /tmp/cursor-plugins/pstack --to .
 PSTACK_UPSTREAM=/tmp/cursor-plugins/pstack npm test
 ```
 
-A second run on the same pin changes no byte. Hand-edited Pi files are `pi-only` in `CLASS_RULES`: `setup-pstack`, `poteto-help`, `deslop`, `check-plan.test.mjs`, and `bun.lock`, plus the files under `agents/` and `extensions/`.
+A second run on the same pin changes no byte. Hand-edited Pi files are `pi-only` in `CLASS_RULES`: `setup-pstack`, `poteto-help`, `deslop`, and `bun.lock`, plus the files under `agents/` and `extensions/`.
 
 ## License
 
