@@ -1,5 +1,11 @@
 # @duylvh/pi-pstack
 
+## 0.11.1
+
+### Patch Changes
+
+- `poteto-agent` and `comment-sicko` set `cache_retention: short` (`@tintinweb/pi-subagents` 0.26.2). With `PI_CACHE_RETENTION=long`, these short-lived delegates no longer pay Anthropic's 1-hour cache-write rate. The main session keeps its own retention, and without that variable nothing changes.
+
 ## 0.11.0
 
 ### Minor Changes

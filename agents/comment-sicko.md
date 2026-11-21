@@ -5,6 +5,7 @@ tools: read, grep, find, ls, bash
 systemPromptMode: replace
 inheritProjectContext: true
 inheritSkills: true
+cache_retention: short
 ---
 
 # Comment Sicko
